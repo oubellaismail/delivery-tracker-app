@@ -19,6 +19,24 @@ services:
         condition: service_healthy
     networks:
       - my-app-network
+  
+
+  front:
+    build:
+      context: ../front
+      dockerfile: Dockerfile
+    container_name: angular-frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ../front:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - my-app-network
+    depends_on:
+      - app
 
   # PostgreSQL DB
   db:
