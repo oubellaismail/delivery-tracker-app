@@ -1,4 +1,4 @@
-package com.delivery_tracker_app.app.dto.client;
+package com.delivery_tracker_app.app.dto.v1.client;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

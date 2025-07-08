@@ -1,10 +1,10 @@
 package com.delivery_tracker_app.app.service;
 
 
-import com.delivery_tracker_app.app.dto.client.ClientMapper;
-import com.delivery_tracker_app.app.dto.client.ClientResponse;
-import com.delivery_tracker_app.app.dto.client.CreateClientRequest;
-import com.delivery_tracker_app.app.dto.client.UpdateClientRequest;
+import com.delivery_tracker_app.app.dto.v1.client.ClientMapper;
+import com.delivery_tracker_app.app.dto.v1.client.ClientResponse;
+import com.delivery_tracker_app.app.dto.v1.client.CreateClientRequest;
+import com.delivery_tracker_app.app.dto.v1.client.UpdateClientRequest;
 import com.delivery_tracker_app.app.entity.Client;
 import com.delivery_tracker_app.app.repository.ClientRepo;
 import lombok.RequiredArgsConstructor;
