@@ -36,7 +36,7 @@ jobs:
 
     - name: Start Docker Compose stack
       # Use the image built in the previous step
-      run: docker-compose -f docker/docker-compose.yaml up -d
+      run: docker compose -f docker/docker-compose.yaml up -d
 
     - name: Wait for Spring Boot app to be ready
       # Robust wait for the app's health endpoint
@@ -58,7 +58,7 @@ jobs:
         if [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; then
           echo "Spring Boot app did not become ready in time."
           # Consider adding logs for docker-compose and app container to debug
-          docker-compose -f docker/docker-compose.yaml logs app
+          docker compose -f docker/docker-compose.yaml logs app
           exit 1
         fi
 
@@ -88,7 +88,7 @@ jobs:
 
     - name: Tear down Docker Compose stack
       # Important to clean up resources after all steps are done
-      run: docker-compose -f docker/docker-compose.yaml down
+      run: docker compose -f docker/docker-compose.yaml down
 
     - name: Deploy Swagger UI to GitHub Pages
       # This step should run ONLY if the previous steps (including linting) succeed.
