@@ -3,16 +3,20 @@ package com.delivery_tracker_app.app.controller.v1;
 import com.delivery_tracker_app.app.dto.v1.client.ClientResponse;
 import com.delivery_tracker_app.app.dto.v1.client.CreateClientRequest;
 import com.delivery_tracker_app.app.dto.v1.client.UpdateClientRequest;
+import com.delivery_tracker_app.app.dto.v1.common.PagedResponse;
 import com.delivery_tracker_app.app.service.ClientService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.util.List;
+import java.net.URI;;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/clients")
 @RequiredArgsConstructor
 
@@ -32,17 +36,20 @@ public class ClientController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ClientResponse>> getAll(){
-        return ResponseEntity.ok(clientService.getAll());
+    public ResponseEntity<PagedResponse<ClientResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size
+    ){
+        return ResponseEntity.ok(clientService.getAll(page, size));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClientResponse> getById(@PathVariable Long id){
+    public ResponseEntity<ClientResponse> getById(@PathVariable @Min(1) Long id){
         return ResponseEntity.ok(clientService.getById(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id){
+    public ResponseEntity<Void> delete(@PathVariable @Min(1) Long id){
         clientService.delete(id);
         return ResponseEntity.noContent().build();
     }

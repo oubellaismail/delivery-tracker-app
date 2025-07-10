@@ -5,20 +5,15 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder
 public class TransportLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private LocalDateTime timestamp;
 
     @ManyToOne
     private Client client;
@@ -40,7 +35,6 @@ public class TransportLog {
     private BigDecimal chargePrice;
     private BigDecimal clientTariff;
     private BigDecimal tripPrice;
-    private BigDecimal difference;
 
     private String operator;
     private String commercial;
