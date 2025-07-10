@@ -1,11 +1,11 @@
+# docker/docker-compose.local.yaml
 version: '3.8'
 
 services:
-  # Spring Boot Backend
   app:
-    # Use the image that was built by the GitHub Actions workflow
-    # This assumes the image 'spring-boot-app-image:latest' is available
-    image: spring-boot-app-image:latest
+    build:
+      context: ../back  # Relative path to your Spring Boot project root
+      dockerfile: Dockerfile # Assumes Dockerfile is directly in ../back
     container_name: spring-boot-app
     ports:
       - "8080:8080"
@@ -19,10 +19,14 @@ services:
         condition: service_healthy
     networks:
       - my-app-network
+    # --- Optional: For hot-reloading/live changes during local dev ---
+    # volumes:
+    #   - ../back/target:/app/target # Mount target dir for faster JAR updates
+    #   - ../back/src:/app/src # Mount source for live reload if using devtools
+    # Command override if needed for devtools setup
+    # command: java -jar -Dspring.profiles.active=dev /app/target/*.jar
 
   front:
-    # If the frontend is not needed for OpenAPI doc generation, you could remove it
-    # to speed up the workflow.
     build:
       context: ../front
       dockerfile: Dockerfile
@@ -39,7 +43,6 @@ services:
     depends_on:
       - app
 
-  # PostgreSQL DB
   db:
     image: postgres:16-alpine
     container_name: postgres-db

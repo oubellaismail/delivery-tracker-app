@@ -1,52 +1,101 @@
-name: Generate & Deploy OpenAPI Docs
+name: Build and Generate OpenAPI Docs
 
 on:
   push:
     branches:
       - features/back
+  pull_request:
 
 jobs:
-  build-and-deploy-docs:
+  build-and-generate-docs:
     runs-on: ubuntu-latest
+    env:
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
     steps:
-      # Clone your repo
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      # Set up Java and build your Spring Boot app
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'temurin'
+    - name: Set up Java 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin' # Recommended for wider compatibility
 
-      - name: Build Spring Boot app
-        run: ./mvnw clean package -DskipTests=true
+    - name: Build Spring Boot app with Maven
+      # This builds the JAR artifact
+      run: mvn clean package -DskipTests=true -f back/pom.xml # Assuming pom.xml is in 'back' directory
 
-      - name: Run app
-        run: java -jar target/*.jar &
-      
-      - name: Wait for API to be ready
-        run: sleep 15
+    - name: Build Docker Image for Spring Boot App
+      # This creates the Docker image for your app, using the pre-built JAR
+      # Assuming your Dockerfile is in `back/Dockerfile` and JAR in `back/target`
+      run: |
+        docker build -t spring-boot-app-image:latest -f back/Dockerfile back
 
-      - name: Export OpenAPI YAML
-        run: |
-          curl http://localhost:8080/v3/api-docs.yaml -o swagger-ui/openapi.yaml
+    - name: Start Docker Compose stack
+      # Use the image built in the previous step
+      run: docker-compose -f docker/docker-compose.yaml up -d
 
-      - name: Lint with Spectral
-        run: |
-          npm install -g @stoplight/spectral-cli
-          spectral lint swagger-ui/openapi.yaml
+    - name: Wait for Spring Boot app to be ready
+      # Robust wait for the app's health endpoint
+      run: |
+        ATTEMPTS=0
+        MAX_ATTEMPTS=30 # Try for 30 * 2 = 60 seconds
+        SLEEP_TIME=2
+        while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
+          # Use /actuator/health for readiness check, or adjust if your app has a different health endpoint
+          if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+            echo "Spring Boot app is ready!"
+            break
+          fi
+          echo "Waiting for Spring Boot app... Attempt $((ATTEMPTS+1)) of $MAX_ATTEMPTS"
+          sleep $SLEEP_TIME
+          ATTEMPTS=$((ATTEMPTS+1))
+        done
 
-      - name: Lint with Redocly CLI
-        run: |
-          npm install -g @redocly/cli
-          redocly lint swagger-ui/openapi.yaml
+        if [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; then
+          echo "Spring Boot app did not become ready in time."
+          # Consider adding logs for docker-compose and app container to debug
+          docker-compose -f docker/docker-compose.yaml logs app
+          exit 1
+        fi
 
-      - name: Deploy Swagger UI to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./swagger-ui
-          publish_branch: gh-pages
+    - name: Create swagger-ui directory
+      # Ensure the directory exists before attempting to download into it
+      run: mkdir -p swagger-ui
+
+    - name: Export OpenAPI YAML
+      # Using -s for silent mode (no progress meter or error messages)
+      run: curl -s http://localhost:8080/v3/api-docs.yaml -o swagger-ui/openapi.yaml
+
+    - name: Set up Node.js for linting tools
+      # Spectral and Redocly CLI are Node.js packages
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18' # Choose a stable Node.js version compatible with the linters
+
+    - name: Lint with Spectral
+      run: |
+        npm install -g @stoplight/spectral-cli
+        spectral lint swagger-ui/openapi.yaml
+
+    - name: Lint with Redocly CLI
+      run: |
+        npm install -g @redocly/cli
+        redocly lint swagger-ui/openapi.yaml
+
+    - name: Tear down Docker Compose stack
+      # Important to clean up resources after all steps are done
+      run: docker-compose -f docker/docker-compose.yaml down
+
+    - name: Deploy Swagger UI to GitHub Pages
+      # This step should run ONLY if the previous steps (including linting) succeed.
+      # The `peaceiris/actions-gh-pages@v3` action handles pushing to `gh-pages` branch.
+      uses: peaceiris/actions-gh-pages@v3
+      if: success() # Only deploy if all previous steps passed
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./swagger-ui
+        publish_branch: gh-pages
