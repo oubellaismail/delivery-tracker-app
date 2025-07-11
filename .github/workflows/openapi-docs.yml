@@ -3,7 +3,7 @@ name: Build and Generate OpenAPI Docs
 on:
   push:
     branches:
-      - main
+      - features/back
   pull_request:
 
 jobs:
