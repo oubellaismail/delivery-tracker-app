@@ -79,7 +79,7 @@ jobs:
     - name: Lint with Spectral
       run: |
         npm install -g @stoplight/spectral-cli
-        spectral lint swagger-ui/openapi.yaml
+        spectral lint swagger-ui/openapi.yaml --ruleset .spectral.yaml
 
     - name: Lint with Redocly CLI
       run: |
