@@ -1,0 +1,10 @@
+# .spectral.yaml
+extends: ["spectral:oas", "spectral:oas-recommended"] # Extends built-in OpenAPI rules
+
+rules:
+  # Example: Add custom rules or override existing ones
+  operation-tag-defined: warn # Change 'error' to 'warn' for this rule
+  info-contact: error        # Ensure a contact object is present in info
+  info-description: error    # Ensure a description is present in info
+  path-case-kebab: error     # Enforce kebab-case for path segments (e.g., /my-resource)
+  # no-example-in-response: error # Example of a rule that might be too strict initially
