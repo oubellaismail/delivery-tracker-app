@@ -5,7 +5,7 @@ SERVICE_NAME="app" # The name of your Spring Boot service in docker-compose.yml
 set -e
 
 # Define the path to your Docker Compose file and environment file
-DOCKER_COMPOSE_FILE="docker/docker-compose.yml"
+DOCKER_COMPOSE_FILE="docker/docker-compose.local.yaml"
 ENV_FILE=".env"
 SERVICE_NAME="app" # The name of your Spring Boot service in docker-compose.yml
 

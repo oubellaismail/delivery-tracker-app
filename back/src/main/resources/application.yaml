@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: app
+
+springdoc:
+  default-produces-media-type: application/vnd.oai.openapi+yaml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
