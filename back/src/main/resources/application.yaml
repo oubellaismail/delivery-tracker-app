@@ -8,15 +8,13 @@ springdoc:
     title : Delivery Tracker API
     version : 1.0.0
     description : API for managing transport logs, drivers, and clients in the delivery tracking system.
-    licence :
+    license :
       name : MIT License
       url : https://opensource.org/licenses/MIT
 
   servers:
-    - url: https://api.yourprojectname.com
+    - url: https://api.translogs.com
       description: Production / Future Deployment Server
-    - url: http://localhost:8080
-      description: Local development server
 
 management:
   endpoints:
