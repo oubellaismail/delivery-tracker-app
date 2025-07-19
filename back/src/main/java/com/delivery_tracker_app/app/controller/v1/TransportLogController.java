@@ -7,6 +7,8 @@ import com.delivery_tracker_app.app.dto.v1.transportLog.CreateTransportLogReques
 import com.delivery_tracker_app.app.dto.v1.transportLog.TransportLogResponse;
 import com.delivery_tracker_app.app.dto.v1.transportLog.UpdateTransportLogRequest;
 import com.delivery_tracker_app.app.service.TransportLogService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -33,8 +35,9 @@ import com.delivery_tracker_app.app.exception.ErrorResponse;
 @AllArgsConstructor
 @RequestMapping(ApiPaths.BASE+ApiPaths.V1+"/trans_logs")
 @Tag(name = "Transport Log Management", description = "Operations related to transport log entries") // Tag for grouping
+@SecurityRequirement(name = "BearerAuth")
 public class TransportLogController {
-    private TransportLogService transportLogService;
+    private final TransportLogService transportLogService;
 
     @PostMapping
     @Operation(summary = "Create a new transport log entry", description = "Records a new transport log entry in the system.")
@@ -86,6 +89,7 @@ public class TransportLogController {
                  content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "404", description = "Transport log entry not found", // Assuming service throws ResourceNotFoundException
                  content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @SecurityRequirements({})
     public ResponseEntity<BaseResponse<TransportLogResponse>> getById(
             @PathVariable
             @Parameter(description = "ID of the transport log entry to retrieve", example = "1") @Min(1) Long id){

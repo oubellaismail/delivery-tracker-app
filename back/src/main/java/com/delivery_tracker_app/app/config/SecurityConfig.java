@@ -1,7 +1,9 @@
 package com.delivery_tracker_app.app.config;
 
+import com.delivery_tracker_app.app.service.serviceimpl.SimpleUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -16,59 +18,44 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true) // Enables @PreAuthorize and @PostAuthorize annotations
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
-
-    /**
-     * Defines the password encoder for hashing passwords.
-     * BCrypt is recommended for its strength and salting capabilities.
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Provides the AuthenticationManager bean, which is used to perform authentication.
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    /**
-     * Configures the security filter chain.
-     * Defines authorization rules, disables CSRF for stateless APIs, and sets up JWT filter.
-     */
+    // Define JwtAuthenticationFilter as a @Bean here.
+    // It will be created by Spring as part of the context.
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, SimpleUserDetailsService simpleUserDetailsService) {
+        return new JwtAuthenticationFilter(jwtTokenProvider, simpleUserDetailsService);
+    }
+
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
-                // Disable CSRF for stateless REST APIs (JWT tokens are inherently protected)
                 .csrf(AbstractHttpConfigurer::disable)
-                // Configure authorization for HTTP requests
                 .authorizeHttpRequests(authorize -> authorize
-                        // Allow public access to the login endpoint
-                        .requestMatchers("/api/auth/login").permitAll()
-                        // All other requests require authentication
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/v3/api-docs.yaml").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/clients/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                // Configure session management to be stateless, as JWTs handle state
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // Add the JWT authentication filter before the default UsernamePasswordAuthenticationFilter
-                // This ensures JWT is processed first for token-based authentication
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
-    // No @PostConstruct for admin user initialization needed here,
-    // as SimpleUserDetailsService handles loading the fixed user defined in properties.
 }

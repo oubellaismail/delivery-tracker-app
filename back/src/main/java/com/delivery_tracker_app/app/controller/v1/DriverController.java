@@ -8,6 +8,7 @@ import com.delivery_tracker_app.app.dto.v1.driver.DriverResponse;
 import com.delivery_tracker_app.app.dto.v1.driver.UpdateDriverRequest;
 import com.delivery_tracker_app.app.exception.ErrorResponse; // Import your custom ErrorResponse
 import com.delivery_tracker_app.app.service.DriverService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -32,6 +33,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 @AllArgsConstructor
 @RequestMapping(ApiPaths.BASE+ApiPaths.V1+"/drivers")
 @Tag(name = "Driver Management", description = "Operations related to driver entities")
+@SecurityRequirement(name = "BearerAuth")
 public class DriverController {
     private final DriverService driverService;
 

@@ -37,6 +37,15 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
+    public Date getExpirationDate(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.getExpiration();
+    }
+
     // Generates a JWT token for the authenticated user
     public String generateToken(Authentication authentication) {
         String username = authentication.getName(); // Principal name (username)

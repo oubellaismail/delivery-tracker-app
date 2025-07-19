@@ -5,6 +5,7 @@ import com.delivery_tracker_app.app.dto.v1.client.CreateClientRequest;
 import com.delivery_tracker_app.app.dto.v1.client.UpdateClientRequest;
 import com.delivery_tracker_app.app.dto.v1.common.PagedResponse;
 import com.delivery_tracker_app.app.service.ClientService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -33,6 +34,7 @@ import com.delivery_tracker_app.app.exception.ErrorResponse;
 @RequestMapping("/api/v1/clients")
 @RequiredArgsConstructor
 @Tag(name = "Client Management", description = "Operations related to client entities") // Tag for grouping
+@SecurityRequirement(name = "BearerAuth")
 public class ClientController {
     private final ClientService clientService;
 

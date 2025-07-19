@@ -20,8 +20,6 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
-
     private final JwtTokenProvider tokenProvider;
     private final SimpleUserDetailsService simpleUserDetailsService;
 
@@ -34,6 +32,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
+        String path = request.getServletPath();
+        String method = request.getMethod();
+
+        if (path.startsWith("/api/v1/auth/") ||
+                (path.startsWith("/api/v1/clients/") && "GET".equalsIgnoreCase(method))) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String jwt = getJwtFromRequest(request);
 

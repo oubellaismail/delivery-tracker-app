@@ -2,26 +2,32 @@ package com.delivery_tracker_app.app.controller.v1;
 
 import com.delivery_tracker_app.app.config.ApiPaths;
 import com.delivery_tracker_app.app.config.JwtTokenProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import com.delivery_tracker_app.app.dto.v1.auth.LoginRequestDto;
+import com.delivery_tracker_app.app.dto.v1.auth.LoginResponseDto;
+import com.delivery_tracker_app.app.dto.v1.common.BaseResponse;
+import com.delivery_tracker_app.app.exception.ErrorResponse;
+
+import jakarta.validation.Valid;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(ApiPaths.BASE+ApiPaths.V1+"/auth")
+@RequestMapping(ApiPaths.BASE + ApiPaths.V1 + "/auth")
+@Tag(name = "Authentication", description = "Handles user login and token generation")
 public class AuthController {
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -31,33 +37,35 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody Map<String, String> loginRequest){
-        String username = loginRequest.get("username");
-        String password = loginRequest.get("password");
+    @Operation(
+            summary = "Authenticate user and generate JWT",
+            description = "Takes username and password, returns access token and expiry time.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Login successful",
+                            content = @Content(schema = @Schema(implementation = BaseResponse.class))),
+                    @ApiResponse(responseCode = "401", description = "Invalid credentials",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    public ResponseEntity<BaseResponse<LoginResponseDto>> authenticateUser(
+            @Valid @RequestBody LoginRequestDto loginRequest
+    ) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.username(),
+                        loginRequest.password()
+                )
+        );
 
-        if(username == null || password == null){
-            return ResponseEntity.badRequest().body(Map.of("message", "Username and password must be provided."));
-        }
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        try{
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            username, password
-                    )
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtTokenProvider.generateToken(authentication);
-            logger.info("User '{}' logged in successfully.", username);
-            return ResponseEntity.ok(Map.of("token", jwt));
-        }
-        catch (BadCredentialsException e){
-            logger.warn("Failed login attempt for user '{}': Invalid credentials.", username);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid username or password."));
-        }
-        catch (Exception ex) {
-            logger.error("An error occurred during login for user '{}': {}", username, ex.getMessage(), ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "An unexpected error occurred during login."));
-        }
+        String jwt = jwtTokenProvider.generateToken(authentication);
+        String username = authentication.getName();
+        String expiresAt = jwtTokenProvider.getExpirationDate(jwt).toString();
 
+        LoginResponseDto response = new LoginResponseDto(jwt, username, expiresAt);
+        return ResponseEntity.ok(BaseResponse.ok("Login successful", response));
     }
 }

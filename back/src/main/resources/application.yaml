@@ -12,20 +12,6 @@ spring:
   application:
     name: app
 
-springdoc:
-  default-produces-media-type: application/vnd.oai.openapi+yaml
-  info :
-    title : Delivery Tracker API
-    version : 1.0.0
-    description : API for managing transport logs, drivers, and clients in the delivery tracking system.
-    license :
-      name : MIT License
-      url : https://opensource.org/licenses/MIT
-
-  servers:
-    - url: https://api.translogs.com
-      description: Production / Future Deployment Server
-
 management:
   endpoints:
     web:
