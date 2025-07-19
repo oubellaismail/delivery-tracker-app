@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(ApiPaths.BASE + ApiPaths.V1 + "/auth")
 @Tag(name = "Authentication", description = "Handles user login and token generation")
+@SecurityRequirement(name = "BearerAuth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -47,9 +49,9 @@ public class AuthController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "Internal server error",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-            },
-            security = {}
+            }
     )
+    @SecurityRequirements({})
     public ResponseEntity<BaseResponse<LoginResponseDto>> authenticateUser(
             @Valid @RequestBody LoginRequestDto loginRequest
     ) {
