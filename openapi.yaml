@@ -1,0 +1,923 @@
+openapi: 3.1.0
+info:
+  title: Delivery Tracker API
+  description: "API for managing transport logs, drivers, and clients in the delivery\
+    \ tracking system."
+  contact:
+    name: 3ss
+    email: contact@example.com
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  version: 1.0.0
+servers:
+- url: https://api.translogs.com
+  description: Production / Future Deployment Server
+tags:
+- name: Authentication
+  description: Handles user login and token generation
+- name: Transport Log Management
+  description: Operations related to transport log entries
+- name: Driver Management
+  description: Operations related to driver entities
+- name: Client Management
+  description: Operations related to client entities
+paths:
+  /api/v1/trans_logs:
+    get:
+      tags:
+      - Transport Log Management
+      summary: Get all transport log entries with pagination
+      description: Retrieves a paginated list of all transport log entries.
+      operationId: getAll
+      parameters:
+      - name: page
+        in: query
+        description: Page number (0-indexed)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+        example: 0
+      - name: size
+        in: query
+        description: Number of items per page (1-30)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          maximum: 30
+          minimum: 1
+        example: 10
+      responses:
+        "200":
+          description: Successfully retrieved list of transport log entries
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedResponse"
+        "400":
+          description: Invalid pagination parameters
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Transport Log Management
+      summary: Update an existing transport log entry
+      description: Modifies details of an existing transport log entry.
+      operationId: update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTransportLogRequest"
+        required: true
+      responses:
+        "200":
+          description: Transport log updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TransportLogResponse"
+        "400":
+          description: Invalid update data provided
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Transport log not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Transport Log Management
+      summary: Create a new transport log entry
+      description: Records a new transport log entry in the system.
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTransportLogRequest"
+        required: true
+      responses:
+        "201":
+          description: Transport log created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TransportLogResponse"
+        "400":
+          description: Invalid transport log data provided
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/drivers:
+    get:
+      tags:
+      - Driver Management
+      summary: Get all drivers with pagination
+      description: Retrieves a paginated list of all drivers.
+      operationId: getAll_1
+      parameters:
+      - name: page
+        in: query
+        description: Page number (0-indexed)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+        example: 0
+      - name: size
+        in: query
+        description: Number of items per page (1-100)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          maximum: 100
+          minimum: 1
+        example: 10
+      responses:
+        "200":
+          description: Successfully retrieved list of drivers
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedResponse"
+        "400":
+          description: Invalid pagination parameters
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Driver Management
+      summary: Update an existing driver
+      description: Updates details of an existing driver based on their ID.
+      operationId: update_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDriverRequest"
+        required: true
+      responses:
+        "200":
+          description: Driver updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+        "400":
+          description: Invalid driver data provided
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Driver not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Driver Management
+      summary: Create a new driver
+      description: Adds a new driver to the system.
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDriverRequest"
+        required: true
+      responses:
+        "201":
+          description: Driver created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+        "400":
+          description: Invalid driver data provided
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/clients:
+    get:
+      tags:
+      - Client Management
+      summary: Get all clients with pagination
+      description: Retrieves a paginated list of all client records.
+      operationId: getAll_2
+      parameters:
+      - name: page
+        in: query
+        description: Page number (0-indexed)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+        example: 0
+      - name: size
+        in: query
+        description: Number of items per page (1-100)
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          maximum: 100
+          minimum: 1
+        example: 10
+      responses:
+        "200":
+          description: Successfully retrieved list of clients
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedResponse"
+        "400":
+          description: Invalid pagination parameters
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Client Management
+      summary: Update an existing client
+      description: Modifies the details of an existing client based on their ID.
+      operationId: update_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClientRequest"
+        required: true
+      responses:
+        "200":
+          description: Client updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ClientResponse"
+        "400":
+          description: Invalid client update data
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Client not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Client Management
+      summary: Create a new client
+      description: Registers a new client with the system.
+      operationId: create_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientRequest"
+        required: true
+      responses:
+        "201":
+          description: Client created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ClientResponse"
+        "400":
+          description: Invalid client data provided
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/auth/login:
+    post:
+      tags:
+      - Authentication
+      summary: Authenticate user and generate JWT
+      description: "Takes username and password, returns access token and expiry time."
+      operationId: authenticateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequestDto"
+        required: true
+      responses:
+        "200":
+          description: Login successful
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/trans_logs/{id}:
+    get:
+      tags:
+      - Transport Log Management
+      summary: Get transport log entry by ID
+      description: Retrieves details of a single transport log entry by its unique
+        ID.
+      operationId: getById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the transport log entry to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        example: 1
+      responses:
+        "200":
+          description: Transport log entry found and returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TransportLogResponse"
+        "400":
+          description: Invalid transport log ID format
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Transport log entry not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Transport Log Management
+      summary: Delete a transport log entry by ID
+      description: Deletes a transport log record from the system based on its unique
+        ID.
+      operationId: delete
+      parameters:
+      - name: id
+        in: path
+        description: ID of the transport log entry to delete
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        example: 1
+      responses:
+        "204":
+          description: Transport log entry deleted successfully (No Content)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponseVoid"
+        "400":
+          description: Invalid transport log ID format
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Transport log entry not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/drivers/{id}:
+    get:
+      tags:
+      - Driver Management
+      summary: Get driver by ID
+      description: Retrieves details of a single driver by their unique ID.
+      operationId: getById_1
+      parameters:
+      - name: id
+        in: path
+        description: ID of the driver to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        example: 1
+      responses:
+        "200":
+          description: Driver found and returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+        "400":
+          description: Invalid driver ID format
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Driver not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Driver Management
+      summary: Delete a driver by ID
+      description: Deletes a driver record from the system based on their unique ID.
+      operationId: delete_1
+      parameters:
+      - name: id
+        in: path
+        description: ID of the driver to delete
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        example: 1
+      responses:
+        "200":
+          description: Driver deleted successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+        "400":
+          description: Invalid driver ID format
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Driver not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/clients/{id}:
+    get:
+      tags:
+      - Client Management
+      summary: Get client by ID
+      description: Retrieves the details of a single client by their unique identifier.
+      operationId: getById_2
+      parameters:
+      - name: id
+        in: path
+        description: ID of the client to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        example: 1
+      responses:
+        "200":
+          description: Client found and returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ClientResponse"
+        "400":
+          description: Invalid client ID format
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Client not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Client Management
+      summary: Delete a client by ID
+      description: Removes a client record from the system based on their unique ID.
+      operationId: delete_2
+      parameters:
+      - name: id
+        in: path
+        description: ID of the client to delete
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+        example: 1
+      responses:
+        "204":
+          description: Client deleted successfully (No Content)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BaseResponseVoid"
+        "400":
+          description: Invalid client ID format
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Client not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+      - BearerAuth: []
+components:
+  schemas:
+    UpdateTransportLogRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        clientId:
+          type: integer
+          format: int64
+        driverId:
+          type: integer
+          format: int64
+        loadDate:
+          type: string
+          format: date
+        loadLocation:
+          type: string
+          minLength: 1
+        unloadDate:
+          type: string
+          format: date
+        unloadLocation:
+          type: string
+          minLength: 1
+        destinationName:
+          type: string
+          minLength: 1
+        deliveryNote:
+          type: string
+        advance:
+          type: number
+        fuelQuantity:
+          type: number
+        fuelPricePerLiter:
+          type: number
+        variableCharge:
+          type: number
+        chargePrice:
+          type: number
+        clientTariff:
+          type: number
+        tripPrice:
+          type: number
+        operator:
+          type: string
+          minLength: 1
+        commercial:
+          type: string
+          minLength: 1
+      required:
+      - advance
+      - chargePrice
+      - clientId
+      - clientTariff
+      - commercial
+      - destinationName
+      - driverId
+      - fuelPricePerLiter
+      - fuelQuantity
+      - id
+      - loadDate
+      - loadLocation
+      - operator
+      - tripPrice
+      - unloadDate
+      - unloadLocation
+      - variableCharge
+    ClientResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        identityId:
+          type: string
+    DriverResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        plateNumber:
+          type: string
+    TransportLogResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        client:
+          $ref: "#/components/schemas/ClientResponse"
+        driver:
+          $ref: "#/components/schemas/DriverResponse"
+        loadDate:
+          type: string
+          format: date
+        loadLocation:
+          type: string
+        unloadDate:
+          type: string
+          format: date
+        unloadLocation:
+          type: string
+        destinationName:
+          type: string
+        deliveryNote:
+          type: string
+        advance:
+          type: number
+        fuelQuantity:
+          type: number
+        fuelPricePerLiter:
+          type: number
+        variableCharge:
+          type: number
+        chargePrice:
+          type: number
+        clientTariff:
+          type: number
+        tripPrice:
+          type: number
+        operator:
+          type: string
+        commercial:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    UpdateDriverRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          maxLength: 20
+          minLength: 0
+        plateNumber:
+          type: string
+          maxLength: 20
+          minLength: 0
+      required:
+      - id
+      - name
+      - plateNumber
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data: {}
+    UpdateClientRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          maxLength: 20
+          minLength: 0
+        identityId:
+          type: string
+          maxLength: 20
+          minLength: 0
+      required:
+      - id
+      - identityId
+      - name
+    CreateTransportLogRequest:
+      type: object
+      properties:
+        clientId:
+          type: integer
+          format: int64
+        driverId:
+          type: integer
+          format: int64
+        loadDate:
+          type: string
+          format: date
+        loadLocation:
+          type: string
+          minLength: 1
+        unloadDate:
+          type: string
+          format: date
+        unloadLocation:
+          type: string
+          minLength: 1
+        destinationName:
+          type: string
+          minLength: 1
+        deliveryNote:
+          type: string
+        advance:
+          type: number
+        fuelQuantity:
+          type: number
+        fuelPricePerLiter:
+          type: number
+        variableCharge:
+          type: number
+        chargePrice:
+          type: number
+        clientTariff:
+          type: number
+        tripPrice:
+          type: number
+        operator:
+          type: string
+          minLength: 1
+        commercial:
+          type: string
+          minLength: 1
+      required:
+      - advance
+      - chargePrice
+      - clientId
+      - clientTariff
+      - commercial
+      - destinationName
+      - driverId
+      - fuelPricePerLiter
+      - fuelQuantity
+      - loadDate
+      - loadLocation
+      - operator
+      - tripPrice
+      - unloadDate
+      - unloadLocation
+      - variableCharge
+    CreateDriverRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 20
+          minLength: 0
+        plateNumber:
+          type: string
+          maxLength: 20
+          minLength: 0
+      required:
+      - name
+      - plateNumber
+    CreateClientRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        identityId:
+          type: string
+          maxLength: 20
+          minLength: 0
+      required:
+      - identityId
+      - name
+    LoginRequestDto:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+      - username
+    PagedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        last:
+          type: boolean
+    BaseResponseVoid:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data: {}
+  securitySchemes:
+    BearerAuth:
+      type: http
+      description: JWT authentication using a Bearer token. Enter the token (without
+        'Bearer ') in the field below.
+      scheme: bearer
+      bearerFormat: JWT
