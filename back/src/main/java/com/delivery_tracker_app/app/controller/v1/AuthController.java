@@ -47,7 +47,8 @@ public class AuthController {
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500", description = "Internal server error",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-            }
+            },
+            security = {}
     )
     public ResponseEntity<BaseResponse<LoginResponseDto>> authenticateUser(
             @Valid @RequestBody LoginRequestDto loginRequest

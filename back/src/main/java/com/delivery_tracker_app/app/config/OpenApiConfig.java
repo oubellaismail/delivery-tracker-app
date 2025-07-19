@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
                 )
         ),
         servers = {
-                @Server(url = "http://localhost:8080", description = "Local Development Server"),
                 @Server(url = "https://api.translogs.com", description = "Production / Future Deployment Server")
         }
 )
