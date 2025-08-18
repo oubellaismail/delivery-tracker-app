@@ -34,6 +34,9 @@ public class DriverServiceImpl implements DriverService {
         Driver updated = driverRepo.findById(req.id()).orElseThrow(
                 () -> new ResourceNotFoundException("Client not found !")
         );
+        updated.setName(req.name());
+        updated.setPlateNumber(req.plateNumber());
+
         updated =  driverRepo.save(updated);
         return driverMapper.toDto(updated);
     }
@@ -56,15 +59,17 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public DriverResponse getById(Long id){
+        // Changed exception to ResourceNotFoundException
         Driver driver = driverRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Driver not found !"));
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found !"));
         return driverMapper.toDto(driver);
     }
 
     @Override
     public void delete(Long id){
+        // Changed exception to ResourceNotFoundException
         driverRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Driver not found !"));
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found !"));
 
         driverRepo.deleteById(id);
     }

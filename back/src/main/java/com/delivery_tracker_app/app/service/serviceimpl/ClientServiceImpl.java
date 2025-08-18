@@ -60,8 +60,6 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public ClientResponse getById(Long id){
-//        Client response = clientRepo.findById(id)
-//                .orElseThrow(() -> new IllegalArgumentException("Client not found !"));
 
         Client response = clientRepo.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Client not found !")
