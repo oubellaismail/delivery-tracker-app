@@ -1,6 +1,3 @@
-# docker/docker-compose.local.yaml
-version: '3.8'
-
 services:
   app:
     build:

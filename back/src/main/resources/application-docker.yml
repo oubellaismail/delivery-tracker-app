@@ -9,7 +9,9 @@ app:
       ms : 1800000
 
 spring:
-  profiles : docker
+  config :
+    activate:
+      on-profile: docker
   application:
     name: app
 
