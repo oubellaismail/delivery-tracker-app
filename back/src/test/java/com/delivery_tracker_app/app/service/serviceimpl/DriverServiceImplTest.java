@@ -197,14 +197,14 @@ class DriverServiceImplTest {
     }
 
     @Test
-    @DisplayName("should throw IllegalArgumentException if driver by ID is not found")
+    @DisplayName("should throw ResourceNotFoundException if driver by ID is not found")
     void getById_ShouldThrowExceptionIfNotFound() {
         // Arrange
         Long driverId = 99L;
         when(driverRepo.findById(driverId)).thenReturn(Optional.empty());
 
         // Assert
-        assertThrows(IllegalArgumentException.class, () -> driverService.getById(driverId));
+        assertThrows(ResourceNotFoundException.class, () -> driverService.getById(driverId));
 
         verify(driverRepo, times(1)).findById(driverId);
         verify(driverMapper, never()).toDto(any(Driver.class));
@@ -227,14 +227,14 @@ class DriverServiceImplTest {
     }
 
     @Test
-    @DisplayName("should throw IllegalArgumentException when deleting a non-existent driver")
+    @DisplayName("should throw ResourceNotFoundException when deleting a non-existent driver")
     void delete_ShouldThrowExceptionIfNotFound() {
         // Arrange
         Long driverId = 99L;
         when(driverRepo.findById(driverId)).thenReturn(Optional.empty());
 
         // Assert
-        assertThrows(IllegalArgumentException.class, () -> driverService.delete(driverId));
+        assertThrows(ResourceNotFoundException.class, () -> driverService.delete(driverId));
 
         // Verify that findById was called, but deleteById was not
         verify(driverRepo, times(1)).findById(driverId);
