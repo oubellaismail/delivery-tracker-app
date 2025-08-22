@@ -74,7 +74,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run OWASP Dependency-Check (SCA)
-        uses: dependency-check/action@v4
+        uses: dependency-check/Dependency-Check_Action@main
         with:
           project: ${{ github.repository }}
           path: back # Point to the project directory
