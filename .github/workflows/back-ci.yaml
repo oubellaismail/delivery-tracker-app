@@ -44,7 +44,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
       - name: Run Tests and Generate JaCoCo Report
-        run: ./mvnw test -f back/pom.xml
+        run: ./mvnw test
+        working-directory: ./back
       - name: Upload JaCoCo Coverage Report
         uses: codecov/codecov-action@v4
         with:
@@ -76,9 +77,23 @@ jobs:
         uses: dependency-check/action@v4
         with:
           project: ${{ github.repository }}
-          path: back
-          format: "SARIF"
-          args: '--scan back'
+          path: back # Point to the project directory
+          format: "HTML,SARIF"
+          args: >
+            --failOnCVSS 7
+            --enableRetired
+            --scan back
+      - name: Upload Dependency-Check report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dependency-Check Report
+          path: '**/dependency-check-report.html'
+          
+      - name: Upload SARIF report
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: '**/dependency-check-report.sarif'
       - name: Run Semgrep (SAST)
         uses: returntocorp/semgrep-action@v1
         with:
