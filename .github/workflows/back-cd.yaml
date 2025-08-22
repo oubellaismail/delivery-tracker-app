@@ -1,0 +1,41 @@
+name: CD - Deploy Spring Boot App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Log in to DockerHub
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3. Build and push Docker image
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/delivery-app:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/delivery-app:latest
+
+      # 4. Deploy to DigitalOcean VM via SSH
+      - name: Deploy on DigitalOcean VM
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/delivery-app:latest
+            docker stop delivery-app || true
+            docker rm delivery-app || true
+            docker run -d --name delivery-app -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/delivery-app:latest
