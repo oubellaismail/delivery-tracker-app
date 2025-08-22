@@ -77,15 +77,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
-      - name: Run OWASP Dependency-Check (SCA)
+      - name: Run OWASP Dependency-Check (HTML)
         uses: dependency-check/Dependency-Check_Action@main
         env:
           JAVA_HOME: /opt/jdk
-        id: depcheck
         with:
-          project: 'test'
+          project: 'delivery-tracker'
           path: './back'
-          format: 'HTML,SARIF'
+          format: 'HTML'
+          out: 'reports'
+
+      - name: Run OWASP Dependency-Check (SARIF)
+        uses: dependency-check/Dependency-Check_Action@main
+        env:
+          JAVA_HOME: /opt/jdk
+        with:
+          project: 'delivery-tracker'
+          path: './back'
+          format: 'SARIF'
           out: 'reports'
           args: >
             --failOnCVSS 7
@@ -101,7 +110,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: ${{ github.workspace }}/reports/dependency-check-report.sarif
+          sarif_file: reports/dependency-check-report.sarif
   
       - name: Run Semgrep (SAST)
         uses: returntocorp/semgrep-action@v1
