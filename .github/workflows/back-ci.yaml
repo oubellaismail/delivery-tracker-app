@@ -30,6 +30,7 @@ jobs:
           distribution: 'temurin'
       - name: Build Spring Boot app
         run: ./mvnw clean install -f back/pom.xml
+        working-directory: ./back
 
   test:
     needs: build
