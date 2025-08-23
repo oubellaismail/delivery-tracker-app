@@ -6,8 +6,6 @@ on:
       - CI Backend
     types:
       - completed
-    branches:
-      - "**"
 
 permissions:
   contents: read
