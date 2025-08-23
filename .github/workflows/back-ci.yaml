@@ -4,7 +4,7 @@ on:
     branches: ["**"]
     paths:
       - 'back/**'
-      - '.github/workflows/back-ci.yaml'
+      - '.github/workflows/**'
   pull_request:
     branches:
       - main
