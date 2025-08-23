@@ -1,8 +1,13 @@
 name: Security Scans
 
 on:
-  workflow_dispatch:
-
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches:
+      - "**"
+      
 permissions:
   contents: read
   security-events: write
