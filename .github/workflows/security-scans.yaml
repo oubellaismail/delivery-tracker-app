@@ -2,8 +2,7 @@ name: Security Scans
 
 on:
   workflow_run:
-    workflows: 
-      - CI Backend
+    workflows: ["CI"]
     types:
       - completed
 
