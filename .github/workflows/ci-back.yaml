@@ -80,10 +80,12 @@ jobs:
         with:
           context: ./back
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/spring-boot-backend:staging
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   security-scans:
     uses: ./.github/workflows/security-scans.yaml
-    needs: build-and-push-docker
+    needs: [build, test, build-and-push-docker]
+    with:
+      image_tag: ${{ needs.build-and-push-docker.outputs.image_tag }}
