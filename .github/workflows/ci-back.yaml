@@ -1,0 +1,17 @@
+name: CI Backend
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - 'back/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: CI Placeholder
+        run: echo "CI pipeline placeholder"

@@ -1,0 +1,19 @@
+# DevSecOps Web App Project
+
+This project is a practical implementation of **DevSecOps practices** using a full-stack web application.  
+It aims to integrate **development, security, and operations** into a seamless workflow by building a secure CI/CD pipeline.
+
+##  Project Overview
+- **Backend:** Spring Boot  
+- **Frontend:** Angular  
+- **Database:** PostgreSQL  
+- **Containerization:** Docker  
+- **CI/CD:** GitHub Actions  
+- **Security:** Automated scans (SAST, SCA, secrets detection, container scanning)
+
+##  Goal
+The main objective of this project is to showcase how security can be embedded into the software development lifecycle, ensuring that applications are **built, tested, and deployed securely**.
+
+##  Status
+This project is currently **in progress**.  
+More detailed documentation and setup instructions will be added once the implementation is complete.

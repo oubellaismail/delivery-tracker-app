@@ -1,0 +1,13 @@
+name: CD Deploy
+
+on:
+  workflow_run:
+    workflows: ["Security Scans"]
+    types: [completed]
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: CD Placeholder
+        run: echo "CD deploy placeholder"

@@ -1,0 +1,13 @@
+name: Security Scans
+
+on:
+  workflow_run:
+    workflows: ["CI Backend"]
+    types: [completed]
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Security Scans Placeholder
+        run: echo "Security scans placeholder"
