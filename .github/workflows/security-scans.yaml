@@ -107,8 +107,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trivy Docker Image Scan
-        run: |
-          trivy image --exit-code 1 --severity HIGH,CRITICAL --format sarif -o trivy-image.sarif ${{ inputs.image_tag }}
+        run: trivy image --exit-code 1 --severity HIGH,CRITICAL --format sarif -o trivy-image.sarif "$IMAGE_TAG"
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
 
       - name: Upload Docker Image SARIF
         uses: github/codeql-action/upload-sarif@v3
