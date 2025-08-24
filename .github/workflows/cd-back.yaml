@@ -1,8 +1,8 @@
-name: CD Deploy
+name: CD Backend
 
 on:
   workflow_run:
-    workflows: ["Security Scans"]
+    workflows: ["Backend Security Scans"]
     types: [completed]
 
 jobs:

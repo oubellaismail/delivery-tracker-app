@@ -1,4 +1,4 @@
-name: Security Scans
+name: Backend Security Scans
 
 on:
   workflow_run:
