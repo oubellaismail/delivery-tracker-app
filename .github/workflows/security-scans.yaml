@@ -1,13 +1,8 @@
 name: Backend Security Scans
 
 on:
-  workflow_run:
-    workflows: ["CI Backend"]
-    types:
-      - completed
-    branches:
-      - "**"
-      
+  workflow_call:
+    
 permissions:
   contents: read
   security-events: write

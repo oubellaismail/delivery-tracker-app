@@ -83,3 +83,7 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/spring-boot-backend:staging
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  security-scans:
+    uses: ./.github/workflows/security-scans.yaml
+    needs: build-and-push-docker
