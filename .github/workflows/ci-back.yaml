@@ -81,7 +81,7 @@ jobs:
         with:
           context: ./back
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ghcr.io/${{ github.repository_owner }}/spring-boot-backend:${{ github.sha }}:staging
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
