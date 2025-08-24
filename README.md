@@ -1,9 +1,9 @@
-# DevSecOps Web App Project
+# DevSecOps Web App Project ![Status](https://img.shields.io/badge/status-in%20progress-yellow)
 
 This project is a practical implementation of **DevSecOps practices** using a full-stack web application.  
 It aims to integrate **development, security, and operations** into a seamless workflow by building a secure CI/CD pipeline.
 
-##  Project Overview
+## Project Overview
 - **Backend:** Spring Boot  
 - **Frontend:** Angular  
 - **Database:** PostgreSQL  
@@ -11,9 +11,9 @@ It aims to integrate **development, security, and operations** into a seamless w
 - **CI/CD:** GitHub Actions  
 - **Security:** Automated scans (SAST, SCA, secrets detection, container scanning)
 
-##  Goal
+## Goal
 The main objective of this project is to showcase how security can be embedded into the software development lifecycle, ensuring that applications are **built, tested, and deployed securely**.
 
-##  Status
+## Status
 This project is currently **in progress**.  
 More detailed documentation and setup instructions will be added once the implementation is complete.
