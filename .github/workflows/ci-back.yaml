@@ -16,6 +16,7 @@ permissions:
   pull-requests: write
   security-events: write
   actions: write 
+  packages : read
 
 jobs:
   # Build the Spring Boot application
