@@ -1,8 +1,8 @@
-name: Deploy Production
+name: CD Backend
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ["Backend Security Scans"]
     types:
       - completed
     branches:
