@@ -2,7 +2,7 @@ name: Backend Security Scans
 
 on:
   workflow_call:
-    
+
 permissions:
   contents: read
   security-events: write
@@ -81,7 +81,7 @@ jobs:
       - name: Install Trivy
         run: |
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-          sudo mv trivy /usr/local/bin/
+          sudo mv ./bin/trivy /usr/local/bin/
 
       # Filesystem scan
       - name: Trivy FS Scan
