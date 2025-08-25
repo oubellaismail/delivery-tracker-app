@@ -107,7 +107,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trivy Docker Image Scan
-        run: trivy image --exit-code 1 --severity HIGH,CRITICAL --format sarif -o trivy-image.sarif "$IMAGE_TAG" || true
+        run: |
+          trivy image --severity HIGH,CRITICAL --format sarif -o trivy-image.sarif "$IMAGE_TAG" \
+          || echo "{}" > trivy-image.sarif
         env:
           IMAGE_TAG: ${{ inputs.image_tag }}
 
@@ -116,3 +118,9 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-image.sarif
+
+      - name: Fail if HIGH/CRITICAL vulnerabilities found
+        run: |
+          trivy image --exit-code 1 --severity HIGH,CRITICAL "$IMAGE_TAG"
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
