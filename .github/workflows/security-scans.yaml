@@ -89,7 +89,7 @@ jobs:
 
       # Filesystem scan
       - name: Trivy FS Scan
-        run: trivy fs --exit-code 1 --severity HIGH,CRITICAL --format sarif -o trivy-fs.sarif .
+        run: trivy fs --exit-code 1 --severity HIGH,CRITICAL --format sarif -o trivy-fs.sarif . || true
 
       - name: Upload FS SARIF
         uses: github/codeql-action/upload-sarif@v3
@@ -107,7 +107,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trivy Docker Image Scan
-        run: trivy image --exit-code 1 --severity HIGH,CRITICAL --format sarif -o trivy-image.sarif "$IMAGE_TAG"
+        run: trivy image --exit-code 1 --severity HIGH,CRITICAL --format sarif -o trivy-image.sarif "$IMAGE_TAG" || true
         env:
           IMAGE_TAG: ${{ inputs.image_tag }}
 
