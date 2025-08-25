@@ -109,7 +109,7 @@ jobs:
       - name: Trivy Docker Image Scan
         run: |
           trivy image --severity HIGH,CRITICAL --format sarif -o trivy-image.sarif "$IMAGE_TAG" \
-          || echo "{}" > trivy-image.sarif
+          || echo '{"version":"2.1.0","runs":[]}' > trivy-image.sarif
         env:
           IMAGE_TAG: ${{ inputs.image_tag }}
 
