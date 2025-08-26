@@ -16,7 +16,7 @@ permissions:
   pull-requests: write
   security-events: write
   actions: write 
-  packages : read
+  packages : write
 
 jobs:
   # Build the Spring Boot application
@@ -62,6 +62,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs :
+      image_tag: ${{ steps.meta.outputs.image_tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -88,6 +90,13 @@ jobs:
           tags: ${{ steps.meta.outputs.image_tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  tag-name-test : 
+    needs : [build-and-push-docker]
+    runs-on : ubuntu-latest 
+    steps : 
+      - name : Checkout env  
+        run : echo ${{ needs.build-and-push-docker.outputs.image_tag }}
 
   security-scans:
     uses: ./.github/workflows/security-scans.yaml
