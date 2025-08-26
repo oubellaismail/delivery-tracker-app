@@ -91,13 +91,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  tag-name-test : 
-    needs : [build-and-push-docker]
-    runs-on : ubuntu-latest 
-    steps : 
-      - name : Checkout env  
-        run : echo ${{ needs.build-and-push-docker.outputs.image_tag }}
-
   security-scans:
     uses: ./.github/workflows/security-scans.yaml
     needs: [build, test, build-and-push-docker]

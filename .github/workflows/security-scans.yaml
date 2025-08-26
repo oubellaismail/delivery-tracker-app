@@ -96,6 +96,7 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-fs.sarif
+          category: trivy-fs
 
       # Docker image scan using the input
       - name: Trivy Docker Image Scan and SARIF Generation
@@ -104,15 +105,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Validate IMAGE_TAG
-        run: |
-          if [ -z "$IMAGE_TAG" ]; then
-            echo "❌ ERROR: IMAGE_TAG is not set"
-            exit 1
-          fi
-        env:
-          IMAGE_TAG: ${{ inputs.image_tag }}
 
       - name: Trivy Docker Image Scan
         run: |
@@ -126,6 +118,7 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-image.sarif
+          category : trivy-image
 
       - name: Fail if HIGH/CRITICAL vulnerabilities found
         run: |
