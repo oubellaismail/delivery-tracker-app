@@ -105,6 +105,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Validate IMAGE_TAG
+        run: |
+          if [ -z "$IMAGE_TAG" ]; then
+            echo "❌ ERROR: IMAGE_TAG is not set"
+            exit 1
+          fi
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+
       - name: Trivy Docker Image Scan
         run: |
           trivy image --severity HIGH,CRITICAL --format sarif -o trivy-image.sarif "$IMAGE_TAG" \
