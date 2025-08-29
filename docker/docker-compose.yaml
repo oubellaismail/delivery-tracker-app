@@ -63,7 +63,7 @@ services:
     networks:
       - my-app-network
     ports:
-      - "5432:5432"
+      - "3000:3000"
 
 networks:
   my-app-network:
