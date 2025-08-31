@@ -1,0 +1,154 @@
+name: Terraform Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "staging or production"
+        required: true
+        default: "staging"
+        type: choice
+        options: [staging, production]
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: Security Scan + Plan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}  # for Terraform Cloud backend
+
+      # --- IaC Security Scanners ---
+      - name: tfsec (Terraform SAST)
+        uses: aquasecurity/tfsec-action@v1
+
+      - name: Checkov (Policy/Best Practices)
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infra
+          framework: terraform
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Select Workspace
+        run: |
+          terraform workspace list | grep -q "${{ github.event.inputs.environment || 'staging' }}" \
+            && terraform workspace select ${{ github.event.inputs.environment || 'staging' }} \
+            || terraform workspace new ${{ github.event.inputs.environment || 'staging' }}
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan (save JSON for OPA)
+        run: |
+          terraform plan -out=tfplan
+          terraform show -json tfplan > tfplan.json
+
+      # --- OPA / Conftest: enforce custom policies ---
+      - name: Install Conftest
+        run: |
+          curl -L https://github.com/open-policy-agent/conftest/releases/download/v0.55.0/conftest_0.55.0_Linux_x86_64.tar.gz \
+            | tar xz && sudo mv conftest /usr/local/bin/
+
+      - name: Run Conftest on Terraform plan
+        run: conftest test --policy policy tfplan.json
+
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ github.event.inputs.environment || 'staging' }}
+          path: infra/tfplan
+
+  apply:
+    name: Apply
+    runs-on: ubuntu-latest
+    needs: plan
+    if: github.ref == 'refs/heads/main'
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+    defaults:
+      run:
+        working-directory: infra
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ github.event.inputs.environment || 'staging' }}
+          path: infra
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Select Workspace
+        run: |
+          terraform workspace select ${{ github.event.inputs.environment || 'staging' }}
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+
+  drift-detect:
+    name: Drift Detection
+    runs-on: ubuntu-latest
+    schedule:
+      - cron: "0 6 * * 1"   # every Monday 06:00 UTC
+    defaults:
+      run:
+        working-directory: infra
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Select Workspace (staging)
+        run: |
+          terraform workspace list | grep -q "staging" && terraform workspace select staging || terraform workspace new staging
+
+      - name: Detect Drift (staging)
+        id: drift
+        run: |
+          set +e
+          terraform plan -detailed-exitcode -no-color
+          code=$?
+          echo "exit_code=$code" >> $GITHUB_OUTPUT
+          exit 0
+
+      - name: Create Issue on Drift (staging)
+        if: steps.drift.outputs.exit_code == '2'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "Drift detected in staging"
+          content-file: .github/drift-template.md
+          labels: drift,infra,staging

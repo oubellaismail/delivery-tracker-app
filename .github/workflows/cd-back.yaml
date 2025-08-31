@@ -1,47 +1,25 @@
-name: CD Backend
+name: CD Deploy
 
 on:
   workflow_run:
-    workflows: ["Backend Security Scans"]
+    workflows: ["Terraform Apply"]
     types:
       - completed
-    branches:
-      - "**"
-
-permissions:
-  contents: read
-  packages: write
-  deployments: write
 
 jobs:
-  promote-and-deploy:
-    # if: >
-    #   ${{ github.event.workflow_run.conclusion == 'success' }}
-    #   &&
-    #   github.event.workflow_run.head_branch == 'main'
-    
+  deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
     runs-on: ubuntu-latest
+
     steps:
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.7
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Pull Staging Image
-        run: docker pull ghcr.io/${{ github.repository_owner }}/spring-boot-backend:staging
-
-      - name: Tag as Production
-        run: docker tag ghcr.io/${{ github.repository_owner }}/spring-boot-backend:staging \
-                       ghcr.io/${{ github.repository_owner }}/spring-boot-backend:latest
-
-      - name: Push Production Image
-        run: docker push ghcr.io/${{ github.repository_owner }}/spring-boot-backend:latest
-
-      # Optional: deploy to your server (DigitalOcean, GCP, etc.)
-      - name: Deploy to Server
-        run: |
-          echo "Deploy logic here (SSH, Kubernetes, Docker Compose, etc.)"
+          host: ${{ secrets.DO_VM_HOST }}
+          username: ${{ secrets.DO_VM_USER }}
+          key: ${{ secrets.DO_VM_SSH_KEY }}
+          script: |
+            cd /app
+            git pull origin main
+            docker compose pull
+            docker compose up -d
