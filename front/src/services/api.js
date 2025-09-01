@@ -7,6 +7,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout
 });
 
 // Add request interceptor to include JWT token
@@ -16,30 +17,78 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Log the request for debugging
+    console.log('Making request to:', config.baseURL + config.url);
+    console.log('Request config:', {
+      method: config.method,
+      url: config.url,
+      headers: config.headers,
+    });
+    
     return config;
   },
   (error) => {
+    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
 
 // Add response interceptor to handle errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('API Response received:', {
+      status: response.status,
+      url: response.config.url,
+      data: response.data
+    });
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
+    console.error('API Error:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: error.config?.url,
+    });
+
+    // Handle different types of errors
+    if (error.code === 'ECONNABORTED') {
+      console.error('Request timeout');
+      error.userMessage = 'Request timeout. Please check your connection.';
+    } else if (error.code === 'ERR_NETWORK') {
+      console.error('Network error - possibly CORS or server not running');
+      error.userMessage = 'Cannot connect to server. Please check if the server is running.';
+    } else if (error.response?.status === 401) {
       // Token expired or invalid
+      console.log('Authentication failed, clearing tokens');
       localStorage.removeItem('authToken');
       localStorage.removeItem('username');
-      window.location.href = '/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+      error.userMessage = 'Session expired. Please log in again.';
+    } else if (error.response?.status === 403) {
+      error.userMessage = 'Access forbidden.';
+    } else if (error.response?.status >= 500) {
+      error.userMessage = 'Server error. Please try again later.';
+    } else if (error.response?.data?.message) {
+      error.userMessage = error.response.data.message;
+    } else {
+      error.userMessage = 'An unexpected error occurred.';
     }
+
     return Promise.reject(error);
   }
 );
 
 // Auth API
 export const authAPI = {
-  login: (credentials) => api.post('/auth/login', credentials),
+  login: (credentials) => {
+    console.log('Attempting login for username:', credentials.username);
+    return api.post('/auth/login', credentials);
+  },
 };
 
 // Clients API

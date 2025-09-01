@@ -30,7 +30,7 @@ services:
     #   - ../back/target:/app/target # Mount target dir for faster JAR updates
     #   - ../back/src:/app/src # Mount source for live reload if using devtools
     # Command override if needed for devtools setup
-    # command: java -jar -Dspring.profiles.active=dev /app/target/*.jar
+    # command: java -jar -Dspring.profiles.active=dev /app/target/*
 
   front:
     build:
@@ -38,12 +38,13 @@ services:
       dockerfile: Dockerfile
     container_name: react-frontend
     ports:
-      - "5173:5173"
+      - "3000:3000"
     volumes:
-      - ../front:/app
+      - ./front:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - REACT_APP_API_URL=http://app:8080/api/v1
     networks:
       - my-app-network
     depends_on:

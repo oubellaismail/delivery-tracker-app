@@ -4,6 +4,7 @@ import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
 
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -22,6 +23,8 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('authToken');
     const username = localStorage.getItem('username');
     
+    console.log('Auth check on startup:', { token: !!token, username });
+    
     if (token && username) {
       setIsAuthenticated(true);
       setUser({ username });
@@ -29,11 +32,46 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  const loginDemo = () => {
+  const demoUser = { username: 'demo' };
+
+  // Set authentication state
+  localStorage.setItem('authToken', 'demo-token'); // fake token
+  localStorage.setItem('username', demoUser.username);
+
+  setIsAuthenticated(true);
+  setUser(demoUser);
+};
+
   const login = async (credentials) => {
     try {
+      console.log('AuthContext: Attempting login...');
+      console.log('API URL being used:', process.env.REACT_APP_API_URL || 'http://localhost:8080/api/v1');
+      
       const response = await authAPI.login(credentials);
+      
+      console.log('Login response:', response);
+      
+      // Check if response has the expected structure
+      if (!response.data || !response.data.success || !response.data.data) {
+        console.error('Unexpected response structure:', response.data);
+        return { 
+          success: false, 
+          error: 'Invalid response from server' 
+        };
+      }
+      
       const { data } = response.data;
       
+      if (!data.token || !data.username) {
+        console.error('Missing token or username in response:', data);
+        return { 
+          success: false, 
+          error: 'Invalid login response' 
+        };
+      }
+      
+      console.log('Login successful, storing tokens...');
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('username', data.username);
       
@@ -41,16 +79,39 @@ export const AuthProvider = ({ children }) => {
       setUser({ username: data.username });
       
       return { success: true };
+      
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login error details:', {
+        message: error.message,
+        response: error.response,
+        request: error.request,
+        code: error.code,
+        userMessage: error.userMessage
+      });
+      
+      let errorMessage = 'Login failed';
+      
+      if (error.userMessage) {
+        errorMessage = error.userMessage;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.code === 'ERR_NETWORK') {
+        errorMessage = 'Cannot connect to server. Please check if the server is running on http://localhost:8080';
+      } else if (error.code === 'ECONNABORTED') {
+        errorMessage = 'Connection timeout. Please try again.';
+      } else if (error.message.includes('404')) {
+        errorMessage = 'Login endpoint not found. Please check server configuration.';
+      }
+      
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+        error: errorMessage
       };
     }
   };
 
   const logout = () => {
+    console.log('Logging out...');
     localStorage.removeItem('authToken');
     localStorage.removeItem('username');
     setIsAuthenticated(false);
@@ -61,6 +122,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     user,
     login,
+    loginDemo,
     logout,
     loading
   };

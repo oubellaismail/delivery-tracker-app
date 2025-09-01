@@ -68,7 +68,7 @@ const Login = () => {
             }}
           >
             <Typography component="h1" variant="h4" gutterBottom>
-              Delivery Tracker
+              Delivery Tracker 2
             </Typography>
             <Typography component="h2" variant="h6" color="textSecondary" gutterBottom>
               Sign in to your account

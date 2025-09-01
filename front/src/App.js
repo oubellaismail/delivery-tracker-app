@@ -1,4 +1,4 @@
-// src/App.js
+// Fix 1: Update your front/src/App.js - Remove nested routing issue
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children }) => {
   
   if (loading) return <LoadingSpinner />;
   
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 // Public Route Component (redirect to dashboard if already logged in)
@@ -40,7 +40,7 @@ const PublicRoute = ({ children }) => {
   
   if (loading) return <LoadingSpinner />;
   
-  return isAuthenticated ? <Navigate to="/dashboard" /> : children;
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
 };
 
 function AppRoutes() {
@@ -64,14 +64,15 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" />} />
+          <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="clients" element={<Clients />} />
           <Route path="drivers" element={<Drivers />} />
           <Route path="transport-logs" element={<TransportLogs />} />
         </Route>
         
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        {/* Catch all route */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
   );
