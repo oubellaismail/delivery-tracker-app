@@ -1,23 +1,35 @@
-output "staging_ip" {
-  value       = digitalocean_droplet.staging.ipv4_address
-  description = "Public IP of staging droplet"
+# Staging
+output "staging_bastion_ip" {
+  value       = module.staging.bastion_public_ip
+  description = "Staging bastion public IPv4"
 }
-
-output "production_ip" {
-  value       = digitalocean_droplet.production.ipv4_address
-  description = "Public IP of production droplet"
+output "staging_frontend_ip" {
+  value       = module.staging.frontend_public_ip
+  description = "Staging frontend public IPv4"
 }
-
-# Staging DB Host
+output "staging_backend_private_ip" {
+  value       = module.staging.backend_private_ip
+  description = "Staging backend private IPv4"
+}
 output "staging_db_host" {
-  value       = try(digitalocean_database_cluster.staging_db[0].host, null)
-  description = "Managed DB host for staging"
-  sensitive   = false
+  value       = module.staging.db_host
+  description = "Staging DB host (prefers private host)"
 }
 
-# Production DB Host
+# Production
+output "production_bastion_ip" {
+  value       = module.production.bastion_public_ip
+  description = "Production bastion public IPv4"
+}
+output "production_frontend_ip" {
+  value       = module.production.frontend_public_ip
+  description = "Production frontend public IPv4"
+}
+output "production_backend_private_ip" {
+  value       = module.production.backend_private_ip
+  description = "Production backend private IPv4"
+}
 output "production_db_host" {
-  value       = try(digitalocean_database_cluster.production_db[0].host, null)
-  description = "Managed DB host for production"
-  sensitive   = false
+  value       = module.production.db_host
+  description = "Production DB host (prefers private host)"
 }

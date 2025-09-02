@@ -5,63 +5,60 @@ variable "do_token" {
 }
 
 variable "region" {
-  description = "DO region"
+  description = "DigitalOcean region"
   type        = string
   default     = "fra1"
 }
 
 variable "ssh_key_ids" {
-  description = "List of DO SSH key IDs to provision on droplets"
+  description = "List of DO SSH key IDs to install on droplets"
   type        = list(string)
 }
 
-variable "allowed_ssh_cidrs" {
-  description = "CIDRs allowed to SSH. Never use 0.0.0.0/0"
+variable "allowed_admin_cidrs" {
+  description = "CIDRs allowed for SSH to bastion (e.g., your office IPs). Never 0.0.0.0/0."
   type        = list(string)
   default     = []
   validation {
-    condition     = alltrue([for c in var.allowed_ssh_cidrs : c != "0.0.0.0/0"])
-    error_message = "Public SSH (0.0.0.0/0) is forbidden."
+    condition     = alltrue([for c in var.allowed_admin_cidrs : c != "0.0.0.0/0"])
+    error_message = "Do not allow SSH from 0.0.0.0/0."
   }
 }
 
 variable "app_port" {
-  description = "Internal app port exposed by container"
+  description = "Private port used by frontend to reach backend"
   type        = number
   default     = 8080
 }
 
-variable "staging_size"  { 
-    type = string
- default = "s-2vcpu-2gb" 
+# Sizes per env/role
+variable "bastion_size" {
+  type    = string
+  default = "s-1vcpu-1gb"
 }
-variable "production_size" { 
-    type = string
- default = "s-4vcpu-8gb"
+variable "staging_frontend_size" {
+  type    = string
+  default = "s-1vcpu-2gb"
 }
-
-# DB settings
-variable "enable_managed_db" { 
-    type = bool
-    default = true 
+variable "staging_backend_size" {
+  type    = string
+  default = "s-2vcpu-2gb"
 }
-variable "db_engine"         { 
-    type = string
- default = "pg" 
-} # postgres
-variable "db_version"        { 
-    type = string
- default = "16" 
+variable "production_frontend_size" {
+  type    = string
+  default = "s-2vcpu-4gb"
 }
-variable "db_name"           { 
-    type = string
- default = "delivery_tracker" 
+variable "production_backend_size" {
+  type    = string
+  default = "s-4vcpu-8gb"
 }
 
-# Secrets are passed at deploy time via CI (never hardcode)
-variable "app_env" {
-  description = "Map of env vars to pass to the container (JWT_SECRET, DB creds, etc.)"
-  type        = map(string)
-  sensitive   = true
-  default     = {}
+# DB
+variable "db_engine" {
+  type    = string
+  default = "pg"
+}
+variable "db_version" {
+  type    = string
+  default = "16"
 }
