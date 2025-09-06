@@ -7,14 +7,14 @@ import {
   Typography,
   Box,
   Paper,
-  Divider,
-  Chip,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  Avatar,
+  Chip
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -25,37 +25,22 @@ import {
 import { clientsAPI, driversAPI, transportLogsAPI } from '../../services/api';
 import LoadingSpinner from '../Common/LoadingSpinner';
 
-const StatCard = ({ title, value, icon, subtitle }) => (
-  <Card 
-    variant="outlined"
-    sx={{ 
-      height: '100%',
-      transition: 'box-shadow 0.2s ease',
-      '&:hover': {
-        boxShadow: 2
-      }
-    }}
-  >
+const MetricCard = ({ title, value, icon, color = 'primary' }) => (
+  <Card sx={{ height: '100%', borderRadius: 2 }}>
     <CardContent sx={{ p: 3 }}>
-      <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={2}>
-        <Box sx={{ color: 'text.secondary' }}>
-          {icon}
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+        <Box>
+          <Typography variant="h3" sx={{ fontWeight: 700, color: `${color}.main`, mb: 0.5 }}>
+            {typeof value === 'number' ? value.toLocaleString() : value}
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500 }}>
+            {title}
+          </Typography>
         </Box>
+        <Avatar sx={{ bgcolor: `${color}.main`, width: 56, height: 56 }}>
+          {icon}
+        </Avatar>
       </Box>
-      
-      <Typography variant="h4" component="div" sx={{ fontWeight: 600, mb: 0.5 }}>
-        {value.toLocaleString()}
-      </Typography>
-      
-      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-        {title}
-      </Typography>
-      
-      {subtitle && (
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-          {subtitle}
-        </Typography>
-      )}
     </CardContent>
   </Card>
 );
@@ -80,7 +65,7 @@ const Dashboard = () => {
       const [clientsRes, driversRes, logsRes] = await Promise.all([
         clientsAPI.getAll(0, 1),
         driversAPI.getAll(0, 1),
-        transportLogsAPI.getAll(0, 10) // Get more logs for better overview
+        transportLogsAPI.getAll(0, 5) // Only get 5 recent logs for simplicity
       ]);
 
       setStats({
@@ -98,212 +83,173 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner message="Loading dashboard..." />;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <LoadingSpinner message="Loading dashboard..." />
+      </Box>
+    );
   }
-
-  const avgTripValue = recentLogs.length > 0 
-    ? (recentLogs.reduce((sum, log) => sum + log.tripPrice, 0) / recentLogs.length)
-    : 0;
 
   const totalRevenue = recentLogs.reduce((sum, log) => sum + log.tripPrice, 0);
 
   return (
     <Box sx={{ p: 3 }}>
+      {/* Header */}
       <Box mb={4}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 600, mb: 1 }}>
+        <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
           Dashboard
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Overview of your transport operations
+        <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem' }}>
+          Transport management overview
         </Typography>
       </Box>
       
       {/* Key Metrics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
+          <MetricCard
             title="Total Clients"
             value={stats.totalClients}
-            icon={<PeopleIcon sx={{ fontSize: 32 }} />}
-            subtitle="Registered customers"
+            icon={<PeopleIcon sx={{ fontSize: 28 }} />}
+            color="primary"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
+          <MetricCard
             title="Active Drivers"
             value={stats.totalDrivers}
-            icon={<TruckIcon sx={{ fontSize: 32 }} />}
-            subtitle="Available for dispatch"
+            icon={<TruckIcon sx={{ fontSize: 28 }} />}
+            color="warning"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Total Deliveries"
+          <MetricCard
+            title="Total Logs"
             value={stats.totalTransportLogs}
-            icon={<LogsIcon sx={{ fontSize: 32 }} />}
-            subtitle="Completed shipments"
+            icon={<LogsIcon sx={{ fontSize: 28 }} />}
+            color="info"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Avg Trip Value"
-            value={`$${avgTripValue.toFixed(0)}`}
-            icon={<TrendingIcon sx={{ fontSize: 32 }} />}
-            subtitle="Revenue per delivery"
+          <MetricCard
+            title="Revenue"
+            value={`$${totalRevenue.toFixed(0)}`}
+            icon={<TrendingIcon sx={{ fontSize: 28 }} />}
+            color="success"
           />
         </Grid>
       </Grid>
 
-      <Grid container spacing={3}>
-        {/* Recent Transport Logs */}
-        <Grid item xs={12} lg={8}>
-          <Paper variant="outlined" sx={{ p: 3 }}>
-            <Box mb={3}>
-              <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
-                Recent Transport Logs
+      {/* Recent Activity */}
+      <Card sx={{ borderRadius: 2 }}>
+        <CardContent sx={{ p: 0 }}>
+          <Box sx={{ p: 3, pb: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
+              Recent Transport Logs
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Latest transport activities
+            </Typography>
+          </Box>
+          
+          {recentLogs.length === 0 ? (
+            <Box textAlign="center" py={6}>
+              <LogsIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No recent logs
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Latest shipment activities
+                Transport logs will appear here once created
               </Typography>
             </Box>
-            
-            {recentLogs.length === 0 ? (
-              <Box textAlign="center" py={6}>
-                <LogsIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No transport logs found
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Transport logs will appear here once created
-                </Typography>
-              </Box>
-            ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Destination</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Client</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Driver</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Route</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600 }}>Value</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {recentLogs.map((log) => (
-                      <TableRow 
-                        key={log.id}
-                        sx={{ 
-                          '&:hover': { 
-                            backgroundColor: 'action.hover' 
-                          } 
-                        }}
-                      >
-                        <TableCell>
-                          <Chip 
-                            label={`#${log.id}`} 
-                            variant="outlined" 
-                            size="small"
-                            sx={{ fontWeight: 500 }}
-                          />
-                        </TableCell>
-                        <TableCell>
+          ) : (
+            <TableContainer>
+              <Table>
+                <TableHead sx={{ bgcolor: 'grey.50' }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600, py: 2 }}>Log ID</TableCell>
+                    <TableCell sx={{ fontWeight: 600, py: 2 }}>Client</TableCell>
+                    <TableCell sx={{ fontWeight: 600, py: 2 }}>Driver</TableCell>
+                    <TableCell sx={{ fontWeight: 600, py: 2 }}>Destination</TableCell>
+                    <TableCell sx={{ fontWeight: 600, py: 2 }}>Date</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, py: 2 }}>Value</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {recentLogs.map((log, index) => (
+                    <TableRow 
+                      key={log.id}
+                      sx={{ 
+                        '&:hover': { bgcolor: 'action.hover' },
+                        '&:last-child td': { border: 0 }
+                      }}
+                    >
+                      <TableCell sx={{ py: 2 }}>
+                        <Chip 
+                          label={`#${log.id}`} 
+                          size="small"
+                          variant="outlined"
+                          sx={{ fontWeight: 500 }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Box display="flex" alignItems="center" gap={1.5}>
+                          <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                            {log.client.name.charAt(0).toUpperCase()}
+                          </Avatar>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {log.destinationName}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
                             {log.client.name}
                           </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {log.driver.name}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" color="text.secondary">
-                            {log.loadLocation} → {log.unloadLocation}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {new Date(log.loadDate).toLocaleDateString()}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: 'success.main' }}>
-                            ${log.tripPrice.toFixed(2)}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </Paper>
-        </Grid>
-        
-        {/* Summary Panel */}
-        <Grid item xs={12} lg={4}>
-          <Paper variant="outlined" sx={{ p: 3, height: 'fit-content' }}>
-            <Typography variant="h6" component="h2" sx={{ fontWeight: 600, mb: 1 }}>
-              Summary
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Key performance indicators
-            </Typography>
-            
-            <Box display="flex" flexDirection="column" gap={3}>
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Total Revenue (Recent)
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 600, color: 'success.main' }}>
-                  ${totalRevenue.toFixed(2)}
-                </Typography>
-              </Box>
-              
-              <Divider />
-              
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Average Trip Value
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  ${avgTripValue.toFixed(2)}
-                </Typography>
-              </Box>
-              
-              <Divider />
-              
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Active Routes
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  {new Set(recentLogs.map(log => `${log.loadLocation}-${log.unloadLocation}`)).size}
-                </Typography>
-              </Box>
-              
-              <Divider />
-              
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Completed Trips (Recent)
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  {recentLogs.length}
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Box display="flex" alignItems="center" gap={1.5}>
+                          <Avatar sx={{ width: 32, height: 32, bgcolor: 'warning.main' }}>
+                            {log.driver.name.charAt(0).toUpperCase()}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {log.driver.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {log.driver.plateNumber}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {log.destinationName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {log.loadLocation} → {log.unloadLocation}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body2">
+                          {new Date(log.loadDate).toLocaleDateString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right" sx={{ py: 2 }}>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            fontWeight: 600, 
+                            color: 'success.main',
+                            fontSize: '0.95rem'
+                          }}
+                        >
+                          ${log.tripPrice.toFixed(2)}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </CardContent>
+      </Card>
     </Box>
   );
 };

@@ -13,15 +13,25 @@ import {
   Snackbar,
   Grid,
   Autocomplete,
-  Chip
+  Card,
+  CardContent,
+  Avatar,
+  Paper
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import {
+  Add as AddIcon,
+  LocalShipping as TruckIcon,
+  Person as PersonIcon,
+  Business as BusinessIcon,
+  AttachMoney as MoneyIcon
+} from '@mui/icons-material';
 import { transportLogsAPI, clientsAPI, driversAPI } from '../../services/api';
 import DataTable from '../Common/DataTable';
 import LoadingSpinner from '../Common/LoadingSpinner';
 import ConfirmDialog from '../Common/ConfirmDialog';
 
 const TransportLogs = () => {
+  // State
   const [logs, setLogs] = useState([]);
   const [clients, setClients] = useState([]);
   const [drivers, setDrivers] = useState([]);
@@ -57,39 +67,71 @@ const TransportLogs = () => {
   // Delete confirmation
   const [deleteDialog, setDeleteDialog] = useState({ open: false, log: null });
   
-  // Notifications
+  // Notification
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
 
+  // Table columns
   const columns = [
-    { id: 'id', label: 'ID' },
+    { 
+      id: 'id', 
+      label: 'ID',
+      render: (row) => `#${row.id}`
+    },
     { 
       id: 'client', 
       label: 'Client', 
-      render: (row) => row.client?.name || 'N/A' 
+      render: (row) => (
+        <Box display="flex" alignItems="center" gap={1}>
+          <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+            <BusinessIcon fontSize="small" />
+          </Avatar>
+          <Typography variant="body2">
+            {row.client?.name || 'N/A'}
+          </Typography>
+        </Box>
+      )
     },
     { 
       id: 'driver', 
       label: 'Driver', 
-      render: (row) => row.driver?.name || 'N/A' 
+      render: (row) => (
+        <Box display="flex" alignItems="center" gap={1}>
+          <Avatar sx={{ width: 32, height: 32, bgcolor: 'warning.main' }}>
+            <PersonIcon fontSize="small" />
+          </Avatar>
+          <Box>
+            <Typography variant="body2">
+              {row.driver?.name || 'N/A'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {row.driver?.plateNumber}
+            </Typography>
+          </Box>
+        </Box>
+      )
     },
-    { id: 'destinationName', label: 'Destination' },
+    { 
+      id: 'destinationName', 
+      label: 'Destination',
+      render: (row) => row.destinationName
+    },
     { 
       id: 'loadDate', 
       label: 'Load Date', 
-      render: (row) => new Date(row.loadDate).toLocaleDateString() 
-    },
-    { 
-      id: 'unloadDate', 
-      label: 'Unload Date', 
-      render: (row) => new Date(row.unloadDate).toLocaleDateString() 
+      render: (row) => new Date(row.loadDate).toLocaleDateString()
     },
     { 
       id: 'tripPrice', 
       label: 'Trip Price', 
-      render: (row) => `${parseFloat(row.tripPrice).toFixed(2)}` 
+      render: (row) => (
+        <Typography variant="body2" fontWeight={600} color="success.main">
+          ${parseFloat(row.tripPrice).toFixed(2)}
+        </Typography>
+      )
     }
   ];
 
+  // Load initial data
   useEffect(() => {
     fetchInitialData();
   }, []);
@@ -101,8 +143,8 @@ const TransportLogs = () => {
   const fetchInitialData = async () => {
     try {
       const [clientsRes, driversRes] = await Promise.all([
-        clientsAPI.getAll(0, 100), // Get all clients for dropdown
-        driversAPI.getAll(0, 100)  // Get all drivers for dropdown
+        clientsAPI.getAll(0, 100),
+        driversAPI.getAll(0, 100)
       ]);
       
       setClients(clientsRes.data.data.data || []);
@@ -117,8 +159,8 @@ const TransportLogs = () => {
       setLoading(true);
       const response = await transportLogsAPI.getAll(page, size);
       const { data, totalElements: total } = response.data.data;
-      setLogs(data);
-      setTotalElements(total);
+      setLogs(data || []);
+      setTotalElements(total || 0);
     } catch (error) {
       showNotification('Error fetching transport logs', 'error');
     } finally {
@@ -126,6 +168,7 @@ const TransportLogs = () => {
     }
   };
 
+  // Dialog handlers
   const handleCreate = () => {
     setEditingLog(null);
     setFormData({
@@ -180,48 +223,11 @@ const TransportLogs = () => {
     setDeleteDialog({ open: true, log });
   };
 
-  const confirmDelete = async () => {
-    try {
-      await transportLogsAPI.delete(deleteDialog.log.id);
-      showNotification('Transport log deleted successfully', 'success');
-      fetchLogs();
-    } catch (error) {
-      showNotification('Error deleting transport log', 'error');
-    }
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
   };
 
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
-
-    try {
-      const submitData = {
-        ...formData,
-        advance: parseFloat(formData.advance),
-        fuelQuantity: parseFloat(formData.fuelQuantity),
-        fuelPricePerLiter: parseFloat(formData.fuelPricePerLiter),
-        variableCharge: parseFloat(formData.variableCharge),
-        chargePrice: parseFloat(formData.chargePrice),
-        clientTariff: parseFloat(formData.clientTariff),
-        tripPrice: parseFloat(formData.tripPrice)
-      };
-
-      if (editingLog) {
-        await transportLogsAPI.update({ id: editingLog.id, ...submitData });
-        showNotification('Transport log updated successfully', 'success');
-      } else {
-        await transportLogsAPI.create(submitData);
-        showNotification('Transport log created successfully', 'success');
-      }
-      
-      setDialogOpen(false);
-      fetchLogs();
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-        `Error ${editingLog ? 'updating' : 'creating'} transport log`;
-      showNotification(errorMessage, 'error');
-    }
-  };
-
+  // Form validation
   const validateForm = () => {
     const errors = {};
     
@@ -239,7 +245,7 @@ const TransportLogs = () => {
     const numericFields = ['advance', 'fuelQuantity', 'fuelPricePerLiter', 'variableCharge', 'chargePrice', 'clientTariff', 'tripPrice'];
     numericFields.forEach(field => {
       if (!formData[field] || isNaN(formData[field])) {
-        errors[field] = `${field.replace(/([A-Z])/g, ' $1').toLowerCase()} must be a valid number`;
+        errors[field] = `${field} must be a valid number`;
       }
     });
     
@@ -247,6 +253,50 @@ const TransportLogs = () => {
     return Object.keys(errors).length === 0;
   };
 
+  // Form submit
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    try {
+      const submitData = {
+        ...formData,
+        advance: parseFloat(formData.advance),
+        fuelQuantity: parseFloat(formData.fuelQuantity),
+        fuelPricePerLiter: parseFloat(formData.fuelPricePerLiter),
+        variableCharge: parseFloat(formData.variableCharge),
+        chargePrice: parseFloat(formData.chargePrice),
+        clientTariff: parseFloat(formData.clientTariff),
+        tripPrice: parseFloat(formData.tripPrice)
+      };
+
+      if (editingLog) {
+        await transportLogsAPI.update({ id: editingLog.id, ...submitData });
+        showNotification('Transport log updated successfully');
+      } else {
+        await transportLogsAPI.create(submitData);
+        showNotification('Transport log created successfully');
+      }
+      
+      setDialogOpen(false);
+      fetchLogs();
+    } catch (error) {
+      showNotification('Error saving transport log', 'error');
+    }
+  };
+
+  // Delete log
+  const confirmDelete = async () => {
+    try {
+      await transportLogsAPI.delete(deleteDialog.log.id);
+      showNotification('Transport log deleted successfully');
+      setDeleteDialog({ open: false, log: null });
+      fetchLogs();
+    } catch (error) {
+      showNotification('Error deleting transport log', 'error');
+    }
+  };
+
+  // Form change handler
   const handleFormChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
     if (formErrors[field]) {
@@ -254,53 +304,141 @@ const TransportLogs = () => {
     }
   };
 
-  const showNotification = (message, severity) => {
+  // Show notification
+  const showNotification = (message, severity = 'success') => {
     setNotification({ open: true, message, severity });
   };
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Transport Logs Management</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreate}
-        >
-          Add Transport Log
-        </Button>
-      </Box>
+      {/* Header */}
+      <Paper 
+        sx={{ 
+          p: 3, 
+          mb: 3, 
+          bgcolor: 'info.main',
+          color: 'white',
+          borderRadius: 2
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Box>
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              Transport Logs Management
+            </Typography>
+            <Typography variant="body1">
+              Manage and track all transport operations
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<AddIcon />}
+            onClick={handleCreate}
+            sx={{
+              bgcolor: 'white',
+              color: 'info.main',
+              '&:hover': { bgcolor: 'grey.100' }
+            }}
+          >
+            Add Transport Log
+          </Button>
+        </Box>
+      </Paper>
 
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <DataTable
-          data={logs}
-          columns={columns}
-          totalElements={totalElements}
-          page={page}
-          size={size}
-          onPageChange={setPage}
-          onRowsPerPageChange={setSize}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-      )}
+      {/* Stats */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography variant="h3" fontWeight="bold" color="info.main">
+                    {totalElements}
+                  </Typography>
+                  <Typography variant="h6" color="text.secondary">
+                    Total Logs
+                  </Typography>
+                </Box>
+                <Avatar sx={{ bgcolor: 'info.light', width: 60, height: 60 }}>
+                  <TruckIcon sx={{ fontSize: 30 }} />
+                </Avatar>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography variant="h3" fontWeight="bold" color="success.main">
+                    {clients.length}
+                  </Typography>
+                  <Typography variant="h6" color="text.secondary">
+                    Active Clients
+                  </Typography>
+                </Box>
+                <Avatar sx={{ bgcolor: 'success.light', width: 60, height: 60 }}>
+                  <BusinessIcon sx={{ fontSize: 30 }} />
+                </Avatar>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography variant="h3" fontWeight="bold" color="warning.main">
+                    {drivers.length}
+                  </Typography>
+                  <Typography variant="h6" color="text.secondary">
+                    Active Drivers
+                  </Typography>
+                </Box>
+                <Avatar sx={{ bgcolor: 'warning.light', width: 60, height: 60 }}>
+                  <PersonIcon sx={{ fontSize: 30 }} />
+                </Avatar>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Data Table */}
+      <Card>
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+            <LoadingSpinner />
+          </Box>
+        ) : (
+          <DataTable
+            data={logs}
+            columns={columns}
+            totalElements={totalElements}
+            page={page}
+            size={size}
+            onPageChange={setPage}
+            onRowsPerPageChange={setSize}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        )}
+      </Card>
 
       {/* Create/Edit Dialog */}
-      <Dialog 
-        open={dialogOpen} 
-        onClose={() => setDialogOpen(false)} 
-        maxWidth="md" 
-        fullWidth
-        PaperProps={{ sx: { maxHeight: '90vh' } }}
-      >
+      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>
           {editingLog ? 'Edit Transport Log' : 'Add New Transport Log'}
         </DialogTitle>
+        
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            {/* Client and Driver Selection */}
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            {/* Client and Driver */}
             <Grid item xs={12} md={6}>
               <Autocomplete
                 options={clients}
@@ -315,11 +453,6 @@ const TransportLogs = () => {
                     helperText={formErrors.clientId}
                   />
                 )}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip variant="outlined" label={option.name} {...getTagProps({ index })} />
-                  ))
-                }
               />
             </Grid>
             
@@ -340,7 +473,7 @@ const TransportLogs = () => {
               />
             </Grid>
 
-            {/* Date Fields */}
+            {/* Dates */}
             <Grid item xs={12} md={6}>
               <TextField
                 label="Load Date"
@@ -367,7 +500,7 @@ const TransportLogs = () => {
               />
             </Grid>
 
-            {/* Location Fields */}
+            {/* Locations */}
             <Grid item xs={12} md={6}>
               <TextField
                 label="Load Location"
@@ -412,7 +545,7 @@ const TransportLogs = () => {
               />
             </Grid>
 
-            {/* Financial Fields */}
+            {/* Financial fields - simplified layout */}
             <Grid item xs={12} md={6}>
               <TextField
                 label="Advance"
@@ -422,20 +555,30 @@ const TransportLogs = () => {
                 onChange={(e) => handleFormChange('advance', e.target.value)}
                 error={!!formErrors.advance}
                 helperText={formErrors.advance}
-                InputProps={{ startAdornment: ' ' }}
               />
             </Grid>
             
             <Grid item xs={12} md={6}>
               <TextField
-                label="Fuel Quantity"
+                label="Trip Price"
+                type="number"
+                fullWidth
+                value={formData.tripPrice}
+                onChange={(e) => handleFormChange('tripPrice', e.target.value)}
+                error={!!formErrors.tripPrice}
+                helperText={formErrors.tripPrice}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Fuel Quantity (L)"
                 type="number"
                 fullWidth
                 value={formData.fuelQuantity}
                 onChange={(e) => handleFormChange('fuelQuantity', e.target.value)}
                 error={!!formErrors.fuelQuantity}
                 helperText={formErrors.fuelQuantity}
-                InputProps={{ endAdornment: 'L' }}
               />
             </Grid>
 
@@ -448,10 +591,9 @@ const TransportLogs = () => {
                 onChange={(e) => handleFormChange('fuelPricePerLiter', e.target.value)}
                 error={!!formErrors.fuelPricePerLiter}
                 helperText={formErrors.fuelPricePerLiter}
-                InputProps={{ startAdornment: '' }}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
               <TextField
                 label="Variable Charge"
@@ -461,10 +603,9 @@ const TransportLogs = () => {
                 onChange={(e) => handleFormChange('variableCharge', e.target.value)}
                 error={!!formErrors.variableCharge}
                 helperText={formErrors.variableCharge}
-                InputProps={{ startAdornment: '' }}
               />
             </Grid>
-
+            
             <Grid item xs={12} md={6}>
               <TextField
                 label="Charge Price"
@@ -474,11 +615,10 @@ const TransportLogs = () => {
                 onChange={(e) => handleFormChange('chargePrice', e.target.value)}
                 error={!!formErrors.chargePrice}
                 helperText={formErrors.chargePrice}
-                InputProps={{ startAdornment: '' }}
               />
             </Grid>
             
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <TextField
                 label="Client Tariff"
                 type="number"
@@ -487,24 +627,10 @@ const TransportLogs = () => {
                 onChange={(e) => handleFormChange('clientTariff', e.target.value)}
                 error={!!formErrors.clientTariff}
                 helperText={formErrors.clientTariff}
-                InputProps={{ startAdornment: '' }}
               />
             </Grid>
 
-            <Grid item xs={12}>
-              <TextField
-                label="Trip Price"
-                type="number"
-                fullWidth
-                value={formData.tripPrice}
-                onChange={(e) => handleFormChange('tripPrice', e.target.value)}
-                error={!!formErrors.tripPrice}
-                helperText={formErrors.tripPrice}
-                InputProps={{ startAdornment: ' '}}
-              />
-            </Grid>
-
-            {/* Operator and Commercial */}
+            {/* Personnel */}
             <Grid item xs={12} md={6}>
               <TextField
                 label="Operator"
@@ -528,9 +654,12 @@ const TransportLogs = () => {
             </Grid>
           </Grid>
         </DialogContent>
+        
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained">
+          <Button onClick={handleCloseDialog}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} variant="contained" color="info">
             {editingLog ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
@@ -547,7 +676,7 @@ const TransportLogs = () => {
         severity="error"
       />
 
-      {/* Notification Snackbar */}
+      {/* Notification */}
       <Snackbar
         open={notification.open}
         autoHideDuration={6000}
@@ -556,7 +685,7 @@ const TransportLogs = () => {
         <Alert
           onClose={() => setNotification({ ...notification, open: false })}
           severity={notification.severity}
-          sx={{ width: '100%' }}
+          variant="filled"
         >
           {notification.message}
         </Alert>
@@ -565,4 +694,7 @@ const TransportLogs = () => {
   );
 };
 
-export default TransportLogs; 
+export default TransportLogs;
+
+
+
