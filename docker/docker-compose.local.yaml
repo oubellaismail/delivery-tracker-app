@@ -40,10 +40,11 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./front:/app
+      - ../front:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
       - REACT_APP_API_URL=http://app:8080/api/v1
     networks:
       - my-app-network

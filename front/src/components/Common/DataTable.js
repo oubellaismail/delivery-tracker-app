@@ -10,7 +10,6 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Tooltip,
   Box,
   Typography
 } from '@mui/material';
@@ -25,8 +24,7 @@ const DataTable = ({
   onPageChange,
   onRowsPerPageChange,
   onEdit,
-  onDelete,
-  loading = false
+  onDelete
 }) => {
   const handleChangePage = (event, newPage) => {
     onPageChange(newPage);
@@ -37,7 +35,7 @@ const DataTable = ({
     onPageChange(0);
   };
 
-  if (data.length === 0 && !loading) {
+  if (data.length === 0) {
     return (
       <Paper sx={{ p: 4, textAlign: 'center' }}>
         <Typography variant="h6" color="textSecondary">
@@ -52,7 +50,7 @@ const DataTable = ({
       <TableContainer>
         <Table>
           <TableHead>
-            <TableRow>
+            <TableRow sx={{ bgcolor: 'grey.50' }}>
               {columns.map((column) => (
                 <TableCell key={column.id} sx={{ fontWeight: 'bold' }}>
                   {column.label}
@@ -71,24 +69,20 @@ const DataTable = ({
                 ))}
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Tooltip title="Edit">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => onEdit(row)}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => onDelete(row)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
+                    <IconButton
+                      size="small"
+                      color="primary"
+                      onClick={() => onEdit(row)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => onDelete(row)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
                   </Box>
                 </TableCell>
               </TableRow>

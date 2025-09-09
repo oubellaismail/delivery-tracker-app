@@ -18,7 +18,9 @@ import {
   Menu,
   MenuItem,
   Avatar,
-  Divider
+  Divider,
+  Badge,
+  Chip
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -27,16 +29,37 @@ import {
   LocalShipping as TruckIcon,
   Assignment as LogsIcon,
   AccountCircle,
-  Logout
+  Logout,
+  BusinessCenter
 } from '@mui/icons-material';
 
-const drawerWidth = 240;
+const drawerWidth = 260;
 
 const menuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { text: 'Clients', icon: <PeopleIcon />, path: '/clients' },
-  { text: 'Drivers', icon: <TruckIcon />, path: '/drivers' },
-  { text: 'Transport Logs', icon: <LogsIcon />, path: '/transport-logs' },
+  { 
+    text: 'Dashboard', 
+    icon: <DashboardIcon />, 
+    path: '/dashboard',
+    color: 'primary'
+  },
+  { 
+    text: 'Clients', 
+    icon: <PeopleIcon />, 
+    path: '/clients',
+    color: 'primary'
+  },
+  { 
+    text: 'Drivers', 
+    icon: <TruckIcon />, 
+    path: '/drivers',
+    color: 'warning'
+  },
+  { 
+    text: 'Transport Logs', 
+    icon: <LogsIcon />, 
+    path: '/transport-logs',
+    color: 'info'
+  },
 ];
 
 const Layout = () => {
@@ -64,48 +87,107 @@ const Layout = () => {
     navigate('/login');
   };
 
+  const currentPage = menuItems.find(item => item.path === location.pathname);
+
   const drawer = (
-    <div>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          Delivery Tracker
-        </Typography>
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={location.pathname === item.path}
-              onClick={() => {
-                navigate(item.path);
-                setMobileOpen(false);
-              }}
-            >
-              <ListItemIcon>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </div>
+    <Box sx={{ height: '100%', bgcolor: 'grey.50' }}>
+      {/* Logo/Brand Section */}
+      <Box sx={{ p: 3, bgcolor: 'white', borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Box display="flex" alignItems="center" gap={2}>
+          <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
+            <BusinessCenter />
+          </Avatar>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+              Transport Pro
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Management System
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Navigation Menu */}
+      <Box sx={{ p: 2 }}>
+        <List disablePadding>
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+                <ListItemButton
+                  selected={isActive}
+                  onClick={() => {
+                    navigate(item.path);
+                    setMobileOpen(false);
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    py: 1.5,
+                    px: 2,
+                    ...(isActive && {
+                      bgcolor: `${item.color}.main`,
+                      color: 'white',
+                      '&:hover': {
+                        bgcolor: `${item.color}.dark`,
+                      },
+                      '& .MuiListItemIcon-root': {
+                        color: 'white',
+                      }
+                    }),
+                    ...(!isActive && {
+                      '&:hover': {
+                        bgcolor: `${item.color}.light`,
+                        '& .MuiListItemIcon-root': {
+                          color: `${item.color}.main`,
+                        }
+                      }
+                    })
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{ 
+                      minWidth: 40,
+                      color: isActive ? 'inherit' : 'text.secondary'
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={item.text}
+                    primaryTypographyProps={{
+                      fontWeight: isActive ? 600 : 500,
+                      fontSize: '0.95rem'
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
+      </Box>
+    </Box>
   );
 
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
+      
+      {/* App Bar */}
       <AppBar
         position="fixed"
+        elevation={0}
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
+          bgcolor: 'white',
+          borderBottom: '1px solid',
+          borderColor: 'divider'
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ py: 1 }}>
           <IconButton
-            color="inherit"
+            color="primary"
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
@@ -113,85 +195,137 @@ const Layout = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {menuItems.find(item => item.path === location.pathname)?.text || 'Dashboard'}
-          </Typography>
-          <IconButton
-            size="large"
-            edge="end"
-            aria-label="account of current user"
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
-            onClick={handleMenuClick}
-            color="inherit"
-          >
-            <Avatar sx={{ width: 32, height: 32 }}>
-              <AccountCircle />
-            </Avatar>
-          </IconButton>
+          
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
+              {currentPage?.text || 'Dashboard'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Welcome back, {user?.username}
+            </Typography>
+          </Box>
+
+          <Box display="flex" alignItems="center" gap={2}>
+            <Chip 
+              label="Online" 
+              color="success" 
+              size="small" 
+              variant="outlined"
+            />
+            <IconButton
+              size="large"
+              edge="end"
+              onClick={handleMenuClick}
+              sx={{
+                border: '1px solid',
+                borderColor: 'divider',
+                '&:hover': {
+                  borderColor: 'primary.main'
+                }
+              }}
+            >
+              <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}>
+                {user?.username?.charAt(0)?.toUpperCase() || <AccountCircle />}
+              </Avatar>
+            </IconButton>
+          </Box>
+          
           <Menu
-            id="menu-appbar"
             anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            sx={{
+              mt: 1,
+              '& .MuiPaper-root': {
+                borderRadius: 2,
+                minWidth: 200,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }
+            }}
           >
-            <MenuItem disabled>
-              <Typography variant="subtitle2">
+            <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                 {user?.username}
               </Typography>
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
+              <Typography variant="caption" color="text.secondary">
+                Administrator
+              </Typography>
+            </Box>
+            <MenuItem 
+              onClick={handleLogout}
+              sx={{ 
+                py: 1.5, 
+                color: 'error.main',
+                '&:hover': {
+                  bgcolor: 'error.light',
+                  color: 'error.dark'
+                }
+              }}
+            >
+              <ListItemIcon sx={{ color: 'inherit' }}>
                 <Logout fontSize="small" />
               </ListItemIcon>
-              Logout
+              <Typography variant="body2" fontWeight={500}>
+                Sign Out
+              </Typography>
             </MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
+
+      {/* Sidebar Drawer */}
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
       >
+        {/* Mobile drawer */}
         <Drawer
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true,
-          }}
+          ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: drawerWidth,
+              border: 'none'
+            },
           }}
         >
           {drawer}
         </Drawer>
+
+        {/* Desktop drawer */}
         <Drawer
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: drawerWidth,
+              border: 'none',
+              borderRight: '1px solid',
+              borderColor: 'divider'
+            },
           }}
           open
         >
           {drawer}
         </Drawer>
       </Box>
+
+      {/* Main content */}
       <Box
         component="main"
-        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+        sx={{ 
+          flexGrow: 1, 
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          minHeight: '100vh',
+          bgcolor: 'grey.50'
+        }}
       >
         <Toolbar />
         <Outlet />

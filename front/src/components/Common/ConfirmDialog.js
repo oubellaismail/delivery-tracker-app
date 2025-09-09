@@ -28,7 +28,11 @@ const ConfirmDialog = ({
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        <Typography>{message}</Typography>
+        {typeof message === 'string' ? (
+          <Typography>{message}</Typography>
+        ) : (
+          message
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="inherit">
