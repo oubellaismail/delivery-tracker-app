@@ -21,52 +21,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-
-      - name: Debug - Check package.json
-        working-directory: front
-        run: |
-          echo "=== Checking package.json ==="
-          cat package.json | grep -A5 -B5 "react-router-dom" || echo "react-router-dom not found in package.json"
-          
-      - name: Debug - Check if package-lock.json exists
-        working-directory: front
-        run: |
-          echo "=== Checking package-lock.json ==="
-          if [ -f "package-lock.json" ]; then
-            echo "package-lock.json exists"
-            ls -la package-lock.json
-          else
-            echo "package-lock.json does not exist"
-          fi
+          cache: 'npm'
+          cache-dependency-path: 'front/package-lock.json'
 
       - name: Install dependencies
         working-directory: front
-        run: |
-          echo "=== Cleaning and installing ==="
-          rm -rf node_modules 
-          npm install
-          
-      - name: Debug - Verify installation
-        working-directory: front
-        run: |
-          echo "=== Checking installed packages ==="
-          npm list react-router-dom || echo "react-router-dom not installed"
-          echo "=== Checking node_modules ==="
-          ls -la node_modules/ | grep react-router || echo "No react-router found in node_modules"
-          echo "=== Checking if react-router-dom directory exists ==="
-          if [ -d "node_modules/react-router-dom" ]; then
-            echo "react-router-dom directory exists"
-            ls -la node_modules/react-router-dom/
-          else
-            echo "react-router-dom directory does not exist"
-          fi
+        run: npm ci
 
-      - name: Debug - Check missing files
-        working-directory: front
-        run: |
-          echo "=== Checking for missing context files ==="
-          find src -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" | head -20
-          
       - name: Run tests
         working-directory: front
         run: npm test -- --watchAll=false
