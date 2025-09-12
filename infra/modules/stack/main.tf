@@ -15,39 +15,14 @@ locals {
   tag_backend    = "role:backend-${var.env_name}"
   tag_db         = "role:db-${var.env_name}"
 
-  # Minimal cloud-init for the bastion host
-  cloud_init_bastion = <<-EOF
+  # --- IDEAL ---
+  # A single, minimal cloud-init for ALL droplets.
+  # Its only job is to update the package cache so Ansible can run reliably.
+  # Ansible will handle all software installation and configuration.
+  cloud_init_minimal = <<-EOF
   #cloud-config
   package_update: true
   package_upgrade: true
-  packages:
-    - fail2ban
-    - unattended-upgrades
-  runcmd:
-    - systemctl enable fail2ban
-    - systemctl start fail2ban
-    - sed -i 's/^#\\?PermitRootLogin .*/PermitRootLogin no/' /etc/ssh/sshd_config
-    - sed -i 's/^#\\?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
-    - systemctl restart ssh
-  EOF
-
-  # Cloud-init for frontend/backend (includes Docker)
-  cloud_init_app = <<-EOF
-  #cloud-config
-  package_update: true
-  package_upgrade: true
-  packages:
-    - docker.io
-    - fail2ban
-    - unattended-upgrades
-  runcmd:
-    - systemctl enable --now docker
-    - sed -i 's/^#\\?PermitRootLogin .*/PermitRootLogin no/' /etc/ssh/sshd_config
-    - sed -i 's/^#\\?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
-    - systemctl restart ssh
-    - ufw --force enable
-    - ufw allow 80/tcp
-    - ufw allow 443/tcp
   EOF
 }
 
@@ -60,7 +35,7 @@ resource "digitalocean_droplet" "bastion" {
   image      = var.image
   vpc_uuid   = var.vpc_uuid
   ssh_keys   = var.ssh_key_ids
-  user_data  = local.cloud_init_bastion
+  user_data  = local.cloud_init_minimal
   monitoring = true
   tags       = [local.tag_env, local.tag_bastion]
 }
@@ -72,7 +47,7 @@ resource "digitalocean_droplet" "frontend" {
   image      = var.image
   vpc_uuid   = var.vpc_uuid
   ssh_keys   = var.ssh_key_ids
-  user_data  = local.cloud_init_app
+  user_data  = local.cloud_init_minimal
   monitoring = true
   tags       = [local.tag_env, local.tag_frontend, "app:frontend"]
 }
@@ -84,7 +59,7 @@ resource "digitalocean_droplet" "backend" {
   image      = var.image
   vpc_uuid   = var.vpc_uuid
   ssh_keys   = var.ssh_key_ids
-  user_data  = local.cloud_init_app
+  user_data  = local.cloud_init_minimal
   monitoring = true
   tags       = [local.tag_env, local.tag_backend, "app:backend"]
 }

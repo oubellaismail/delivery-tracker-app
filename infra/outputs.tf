@@ -33,3 +33,13 @@ output "production_db_host" {
   value       = module.production.db_host
   description = "Production DB host (prefers private host)"
 }
+
+output "staging_frontend_hostname" {
+  value       = digitalocean_record.staging_frontend.fqdn
+  description = "The FQDN for the staging frontend"
+}
+
+output "production_frontend_hostname" {
+  value       = digitalocean_domain.main.name
+  description = "The FQDN for the production frontend"
+}
