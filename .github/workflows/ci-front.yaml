@@ -21,11 +21,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Install dependencies
         working-directory: front
-        run: npm ci --verbose
+        run: npm ci
 
       - name: Run tests
         working-directory: front
@@ -38,12 +37,9 @@ jobs:
       - name: Build Docker image
         run: docker build -t frontend-app:latest -f front/Dockerfile front
 
-      # 🔹 FIXED: two separate steps
-      - name: Save Docker image to tar.gz
-        run: docker save frontend-app:latest | gzip > frontend-app.tar.gz
-
-      - name: Upload Docker image artifact
+      - name: Save Docker image as artifact 
         uses: actions/upload-artifact@v4
         with:
           name: frontend-image
-          path: frontend-app.tar.gz
+          path: |
+            $(docker save frontend-app:latest | gzip > frontend-app.tar.gz)
