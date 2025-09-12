@@ -1,0 +1,48 @@
+name: CI Frontend
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - 'front/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: front
+        run: npm ci
+
+      - name: Run tests
+        working-directory: front
+        run: npm test -- --watchAll=false
+
+      - name: Build app
+        working-directory: front
+        run: npm run build
+
+      - name: Build Docker image
+        run: docker build -t frontend-app:latest -f front/Dockerfile front
+
+      # 🔹 FIXED: two separate steps
+      - name: Save Docker image to tar.gz
+        run: docker save frontend-app:latest | gzip > frontend-app.tar.gz
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-image
+          path: frontend-app.tar.gz
