@@ -133,7 +133,15 @@ const TransportLogs = () => {
 
   // Load initial data
   useEffect(() => {
-    const fetchInitialData = async () => {
+    
+    fetchInitialData();
+  }, []);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [page, size]);
+
+  const fetchInitialData = async () => {
     try {
       const [clientsRes, driversRes] = await Promise.all([
         clientsAPI.getAll(0, 100),
@@ -146,11 +154,8 @@ const TransportLogs = () => {
       showNotification('Error fetching clients and drivers', 'error');
     }
   };
-    fetchInitialData();
-  }, []);
 
-  useEffect(() => {
-   const fetchLogs = async () => {
+  const fetchLogs = async () => {
     try {
       setLoading(true);
       const response = await transportLogsAPI.getAll(page, size);
@@ -163,12 +168,6 @@ const TransportLogs = () => {
       setLoading(false);
     }
   };
-    fetchLogs();
-  }, [page, size]);
-
-  
-
-  
 
   // Dialog handlers
   const handleCreate = () => {
