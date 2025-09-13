@@ -23,7 +23,7 @@ import {
   LocalShipping as TruckIcon,
   Person as PersonIcon,
   Business as BusinessIcon,
-  AttachMoney as MoneyIcon
+
 } from '@mui/icons-material';
 import { transportLogsAPI, clientsAPI, driversAPI } from '../../services/api';
 import DataTable from '../Common/DataTable';
@@ -133,14 +133,7 @@ const TransportLogs = () => {
 
   // Load initial data
   useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  useEffect(() => {
-    fetchLogs();
-  }, [page, size]);
-
-  const fetchInitialData = async () => {
+    const fetchInitialData = async () => {
     try {
       const [clientsRes, driversRes] = await Promise.all([
         clientsAPI.getAll(0, 100),
@@ -153,8 +146,11 @@ const TransportLogs = () => {
       showNotification('Error fetching clients and drivers', 'error');
     }
   };
+    fetchInitialData();
+  }, []);
 
-  const fetchLogs = async () => {
+  useEffect(() => {
+   const fetchLogs = async () => {
     try {
       setLoading(true);
       const response = await transportLogsAPI.getAll(page, size);
@@ -167,6 +163,12 @@ const TransportLogs = () => {
       setLoading(false);
     }
   };
+    fetchLogs();
+  }, [page, size]);
+
+  
+
+  
 
   // Dialog handlers
   const handleCreate = () => {

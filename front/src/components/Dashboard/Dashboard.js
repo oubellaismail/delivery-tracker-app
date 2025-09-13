@@ -6,7 +6,6 @@ import {
   CardContent,
   Typography,
   Box,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -55,10 +54,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+    const fetchDashboardData = async () => {
     try {
       setLoading(true);
       
@@ -81,6 +77,10 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+    fetchDashboardData();
+  }, []);
+
+  
 
   if (loading) {
     return (

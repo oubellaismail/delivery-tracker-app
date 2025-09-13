@@ -83,10 +83,7 @@ const Clients = () => {
 
   // Fetch clients
   useEffect(() => {
-    fetchClients();
-  }, [page, size]);
-
-  const fetchClients = async () => {
+     const fetchClients = async () => {
     try {
       setLoading(true);
       const response = await clientsAPI.getAll(page, size);
@@ -99,6 +96,10 @@ const Clients = () => {
       setLoading(false);
     }
   };
+    fetchClients();
+  }, [page, size]);
+
+ 
 
   // Dialog handlers
   const handleCreate = () => {
