@@ -31,7 +31,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-          cache: false
+          cache: 'npm'
           cache-dependency-path: 'front/package-lock.json'
 
       - name: Install dependencies
