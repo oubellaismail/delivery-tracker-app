@@ -8,13 +8,7 @@ on:
       - '.github/workflows/**'
   pull_request:
     branches: [main]
-  
-permissions:
-  contents: write
-  pull-requests: write
-  security-events: write
-  actions: write 
-  packages: write
+
 
 jobs:
   build-and-test:
