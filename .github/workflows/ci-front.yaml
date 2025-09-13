@@ -8,7 +8,16 @@ on:
       - '.github/workflows/**'
   pull_request:
     branches: [main]
+    paths:
+      - 'front/**'
+      - '.github/workflows/**'
 
+permissions:
+  contents: write
+  pull-requests: write
+  security-events: write
+  actions: write 
+  packages : write
 
 jobs:
   build-and-test:
@@ -39,22 +48,9 @@ jobs:
         working-directory: front
         run: npm test -- --watchAll=false --ci --runInBand
 
-      - name: Build Docker image
-        run: docker build -t frontend-app:latest -f front/Dockerfile front
-
-      - name: Save Docker image as artifact 
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-image
-          path: |
-            $(docker save frontend-app:latest | gzip > frontend-app.tar.gz)
-
   build-and-push-docker:
     needs: build-and-test
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     outputs:
       image_tag: ${{ steps.meta.outputs.image_tag }}
     steps:
@@ -85,7 +81,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   security-scans:
-    uses: ./.github/workflows/security-scans.yaml
+    uses: ./.github/workflows/front-security-scan.yaml
     needs: [build-and-test, build-and-push-docker]
     with:
       image_tag: ${{ needs.build-and-push-docker.outputs.image_tag }}
