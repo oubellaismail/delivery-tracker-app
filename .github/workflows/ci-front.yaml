@@ -35,7 +35,7 @@ jobs:
       - name: Build app
         working-directory: front
         env:
-          CI: false  # This prevents treating warnings as errors
+          CI: false  
         run: npm run build
 
       - name: Build Docker image
