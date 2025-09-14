@@ -61,7 +61,7 @@ const Dashboard = () => {
       const [clientsRes, driversRes, logsRes] = await Promise.all([
         clientsAPI.getAll(0, 1),
         driversAPI.getAll(0, 1),
-        transportLogsAPI.getAll(0, 5) // Only get 5 recent logs for simplicity
+        transportLogsAPI.getAll(0, 5) 
       ]);
 
       setStats({
@@ -94,7 +94,6 @@ const Dashboard = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header */}
       <Box mb={4}>
         <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
           Dashboard
@@ -104,7 +103,6 @@ const Dashboard = () => {
         </Typography>
       </Box>
       
-      {/* Key Metrics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <MetricCard
