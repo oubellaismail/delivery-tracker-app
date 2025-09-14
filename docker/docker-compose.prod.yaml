@@ -1,11 +1,10 @@
 services:
+  # Spring Boot Backend
   app:
     build:
-      context: ../back
+      context: ./back
       dockerfile: Dockerfile
-    container_name: delivery-tracker-backend
-    ports:
-      - "8080:8080"
+    container_name: spring-boot-app
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
@@ -19,44 +18,66 @@ services:
       db:
         condition: service_healthy
     networks:
-      - app-network
-    restart: unless-stopped
+      - my-app-network
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
+  # React Frontend with Nginx
   frontend:
     build:
-      context: ../front
-      dockerfile: dockerfile
-    container_name: delivery-tracker-frontend
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: react-frontend-nginx
     ports:
       - "80:80"
-    networks:
-      - app-network
+      - "443:443" 
     depends_on:
-      - app
-    restart: unless-stopped
+      app:
+        condition: service_healthy
+    networks:
+      - my-app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
+  # PostgreSQL Database
   db:
     image: postgres:16-alpine
-    container_name: delivery-tracker-db
+    container_name: postgres-db
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./backups:/backups
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro  
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
-      - app-network
-    restart: unless-stopped
+      - my-app-network
+    expose:
+      - "5432"
 
 networks:
-  app-network:
+  my-app-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
 volumes:
   db_data:
+    driver: local
