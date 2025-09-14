@@ -23,7 +23,7 @@ import {
   LocalShipping as TruckIcon,
   Person as PersonIcon,
   Business as BusinessIcon,
-  AttachMoney as MoneyIcon
+
 } from '@mui/icons-material';
 import { transportLogsAPI, clientsAPI, driversAPI } from '../../services/api';
 import DataTable from '../Common/DataTable';
@@ -133,6 +133,7 @@ const TransportLogs = () => {
 
   // Load initial data
   useEffect(() => {
+    
     fetchInitialData();
   }, []);
 
