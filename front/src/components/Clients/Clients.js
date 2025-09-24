@@ -100,7 +100,6 @@ const Clients = () => {
     }
   };
 
-  // Dialog handlers
   const handleCreate = () => {
     setEditingClient(null);
     setFormData({ name: '', identityId: '' });
