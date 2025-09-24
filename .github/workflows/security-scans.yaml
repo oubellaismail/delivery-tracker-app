@@ -98,14 +98,15 @@ jobs:
           sarif_file: trivy-fs.sarif
           category: trivy-fs
 
-      # Docker image scan using the input
-      - name: Trivy Docker Image Scan and SARIF Generation
+      # Docker login (separated from scanning)
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Docker image scan
       - name: Trivy Docker Image Scan
         run: |
           trivy image --severity HIGH,CRITICAL --format sarif -o trivy-image.sarif "$IMAGE_TAG" \
@@ -118,7 +119,7 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-image.sarif
-          category : trivy-image
+          category: trivy-image
 
       - name: Fail if HIGH/CRITICAL vulnerabilities found
         run: |
