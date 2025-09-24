@@ -51,6 +51,9 @@ jobs:
   build-and-push-docker:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      packages: write    
+      contents: read
     outputs:
       image_tag: ${{ steps.meta.outputs.image_tag }}
     steps:
