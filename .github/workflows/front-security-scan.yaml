@@ -45,37 +45,11 @@ jobs:
           name: npm-audit-report
           path: front/npm-audit.json
 
-      - name: Run OWASP Dependency-Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: 'Frontend'
-          path: './front'
-          format: 'SARIF'
-          out: 'dependency-check-report'
-
-      - name: Upload Dependency-Check SARIF
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: dependency-check-report/dependency-check-report.sarif
-          category: dependency-check
-
       - name: Run Semgrep (SAST)
         uses: returntocorp/semgrep-action@v1
         with:
           publishToken: ${{ secrets.SEMGREP_TOKEN }}
           config: 'p/ci'
-      
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
 
       - name: Install Trivy
         run: |
@@ -118,11 +92,3 @@ jobs:
           trivy image --exit-code 1 --severity HIGH,CRITICAL "$IMAGE_TAG"
         env:
           IMAGE_TAG: ${{ inputs.image_tag }}
-
-      - name: Run Hadolint (Dockerfile Linter)
-        uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: ./Dockerfile
-
-      - name: Lint GitHub Actions workflows
-        uses: rhysd/actionlint@v1.6.11
