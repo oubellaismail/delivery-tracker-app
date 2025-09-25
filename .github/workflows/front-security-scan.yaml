@@ -125,4 +125,4 @@ jobs:
           dockerfile: ./Dockerfile
 
       - name: Lint GitHub Actions workflows
-        uses: rhysd/actionlint@v1
+        uses: rhysd/actionlint@v1.6.11
