@@ -4,8 +4,8 @@
 Terraform has detected that the actual infrastructure state differs from the expected state defined in your code. This means changes were made outside of the normal Terraform workflow.
 
 ## Issue Details
-- **Environment**: <!-- Will be filled by the workflow -->
-- **Detection Date**: <!-- Automatically set when issue is created -->
+- **Environment**: 
+- **Detection Date**: 
 - **Severity**: 🔴 High Priority (Production) / 🟡 Medium Priority (Staging)
 - **Workflow Run**: [View Full Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
@@ -42,8 +42,8 @@ If your Terraform code represents the desired state:
 cd infra
 terraform init
 terraform workspace select [staging|production]
-terraform plan  # Review changes
-terraform apply  # Fix the infrastructure
+terraform plan  
+terraform apply  
 ```
 
 #### Option B: Update Code (Manual Changes are Correct)
@@ -114,21 +114,17 @@ After resolving the drift:
 
 - 📋 [Infrastructure Repository](https://github.com/${{ github.repository }}/tree/main/infra)
 - 🔄 [Terraform Workflow](https://github.com/${{ github.repository }}/actions/workflows/terraform.yaml)
-- 📊 [Cloud Provider Console](#) <!-- Add your cloud provider link -->
-- 📖 [Team Infrastructure Docs](#) <!-- Add link to your docs -->
-- 🆘 [Incident Response Process](#) <!-- Add link to your incident process -->
+- 📊 [Cloud Provider Console](#) 
+- 📖 [Team Infrastructure Docs](#) 
+- 🆘 [Incident Response Process](#) 
 
 ## Resolution Summary
-<!-- Fill this out when resolving the issue -->
 
 **Root Cause:** 
-<!-- What caused the drift? -->
 
 **Resolution Action:** 
-<!-- What did you do to fix it? -->
 
 **Prevention Measures:** 
-<!-- What will prevent this in the future? -->
 
 ---
 
