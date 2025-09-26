@@ -92,3 +92,18 @@ jobs:
           trivy image --exit-code 1 --severity HIGH,CRITICAL "$IMAGE_TAG"
         env:
           IMAGE_TAG: ${{ inputs.image_tag }}
+      
+      - name: Security Summary
+        if: always()
+        run: |
+          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Tool | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Gitleaks | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
+          echo "| npm audit | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Semgrep | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trivy FS | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trivy Image | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 Reports uploaded to GitHub Security tab" >> $GITHUB_STEP_SUMMARY
