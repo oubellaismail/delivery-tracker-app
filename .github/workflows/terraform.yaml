@@ -13,7 +13,8 @@ on:
     branches: [main]
     paths:
       - 'infra/**'
-
+  schedule:
+    - cron: "0 6 * * 1"   # every Monday 06:00 UTC
 permissions:
   contents: read
 
@@ -145,8 +146,6 @@ jobs:
     name: Drift Detection
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule'  # Only run on scheduled events
-    schedule:
-      - cron: "0 6 * * 1"   # every Monday 06:00 UTC
     defaults:
       run:
         working-directory: infra
