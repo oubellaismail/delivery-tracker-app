@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
   const demoUser = { username: 'demo' };
 
   // Set authentication state
-  localStorage.setItem('authToken', 'demo-token'); // fake token
+  localStorage.setItem('authToken', 'demo-token'); 
   localStorage.setItem('username', demoUser.username);
 
   setIsAuthenticated(true);
